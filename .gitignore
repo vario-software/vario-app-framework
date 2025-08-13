@@ -1,0 +1,64 @@
+### vim
+# Swap
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+
+#
+.vscode
+.idea
+
+# Session
+Session.vim
+Sessionx.vim
+
+# Temporary
+.netrwhist
+*~
+# Auto-generated tag files
+tags
+# Persistent undo
+[._]*.un~
+
+### ansible
+*.retry
+
+# diff
+*.patch
+*.diff
+
+### gpg
+secring.*
+
+### kate
+# Swap Files #
+.*.kate-swp
+.swp.*
+
+# patch
+*.orig
+*.rej
+
+### vagrant 
+# General
+.vagrant/
+
+# Log files (if you are creating logs in debug mode, uncomment this)
+*.log
+
+# temporary files which can be created if a process still has a handle open of a deleted file
+.fuse_hidden*
+
+# KDE directory preferences
+.directory
+
+# Linux trash folder which might appear on any partition or disk
+.Trash-*
+
+# .nfs files are created when an open file is removed but is still being accessed
+.nfs*
+
+### mac
+.DS_Store
