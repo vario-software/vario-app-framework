@@ -1,0 +1,54 @@
+.v-button {
+  display: flex;
+  align-items: center;
+  position: relative;
+  border: 1px solid lightgrey;
+  border-radius: var(--v-border-radius);
+  outline: 0;
+  font-weight: 500;
+  padding: 0.2857em 1.1429em; /* 4px 16px */
+  font-family: inherit;
+  line-height: 1.715em; /* 24px */
+  color: var(--v-accent);
+  cursor: pointer;
+  min-height: 2.572em; /* 36px */
+  vertical-align: middle;
+  font-size: inherit;
+  transition: background 0.6s;
+  background: transparent radial-gradient(circle, transparent 1%, white 1%) center/14000%;
+}
+
+.v-button:active {
+  background-color: color-mix(in srgb, var(--v-accent), transparent 60%);
+  background-size: 100%;
+  transition: background 0s;
+}
+
+.v-button::after {
+  content: '';
+  display: block;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  background-color: currentcolor;
+  transition: opacity 0.15s cubic-bezier(0.25, 0.8, 0.5, 1);
+}
+
+.v-button:hover::after {
+  opacity: 0.1;
+}
+
+.v-button:active::after {
+  opacity: 0.14;
+}
+
+.v-button:not(.v-icon-only) > .v-icon {
+  margin-right: 0.3333em; /* 6px */
+}
+
+
+.v-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

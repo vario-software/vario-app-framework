@@ -1,0 +1,60 @@
+.v-toggle {
+  position: relative;
+}
+
+.v-toggle input {
+  display: none;
+  cursor: pointer;
+}
+
+.v-toggle input + label {
+  position: relative;
+  cursor: pointer;
+}
+
+.v-toggle input + label::before {
+  content: '';
+  display: inline-block;
+  height: 1em; /* 14px */
+  width: 2.2858em; /* 32px */
+  opacity: 0.38;
+  border-radius: 0.5em /* 7px */;
+  vertical-align: middle;
+  background-color: currentcolor;
+  cursor: pointer;
+  margin-right: 0.3571em; /* 5px */
+  transition: background-color 150ms;
+}
+
+.v-toggle input:checked + label::before {
+  background-color: var(--v-secondary);
+}
+
+.v-toggle input + label::after {
+  content: '';
+  position: absolute;
+  background-color: #fff;
+  border-radius: 50vh;
+  padding: 0.7143em; /* 10px */
+  top: -0.0714em; /* -1px */
+  left: 0;
+  cursor: pointer;
+  margin-right: 0.3571em; /* 5px */
+  box-shadow:
+    0 3px 1px -2px rgb(0 0 0 / 20%),
+    0 2px 2px 0 rgb(0 0 0 / 14%),
+    0 1px 5px 0 rgb(0 0 0 / 12%);
+  outline: 0 solid rgb(0 0 0 / 6%);
+  transition:
+    left 150ms cubic-bezier(0.4, 0, 0.2, 1),
+    outline 75ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.v-toggle input:checked + label::after {
+  left: 0.8571em; /* 12px */
+  background-color: var(--v-secondary);
+}
+
+.v-toggle:hover input + label::after {
+  outline-width: 0.2143em; /* 3px */
+}
