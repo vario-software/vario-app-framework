@@ -1,0 +1,15 @@
+.v-link:link,
+.v-link:visited {
+  color: #588712;
+  text-decoration-color: #588712;
+}
+
+.v-link:hover,
+.v-link:visited:hover {
+  color: var(--v-accent);
+}
+
+.v-link:hover:not(.v-banner),
+.v-link:visited:hover:not(.v-banner) {
+  text-decoration-line: none;
+}

@@ -1,0 +1,53 @@
+:root {
+  --v-primary: #2e2e2e;
+  --v-secondary: #84b933;
+  --v-secondary-light: #96cc44;
+  --v-accent: #ab2e68;
+  --v-positive: #84b933;
+  --v-negative: #cd4837;
+  --v-info: #11518c;
+  --v-warning: #f0b618;
+  --v-dark: #1d1d1d;
+  --v-dark-page: #121212;
+  --v-border-radius: 4px;
+}
+
+body {
+  font-family:
+    Roboto,
+    -apple-system,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.5em;
+  padding: 0.7143em; /* 10px | to fit exact distance in the app */
+  margin: 0;
+  color: var(--v-primary);
+  overscroll-behavior-x: none; /* prevent scroll bounce effect */
+  background:#fff;
+}
+
+.text-center{
+  text-align: center;
+}
+
+.text-grey{
+  color: rgb(0 0 0 / 60%) !important;
+  text-decoration-color: rgb(0 0 0 / 60%) !important;
+}
+
+.text-white{
+  color: #fff !important;
+  text-decoration-color: #fff !important;
+}
+
+.hidden{
+  display:none !important;
+}
+
+.full-height: {
+  height: 100%;
+}
+
+.full-width: {
+  width: 100%;
+}

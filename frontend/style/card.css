@@ -1,0 +1,36 @@
+.v-card {
+  box-shadow: 0 0 0.2857em rgb(0 0 0 / 20%) !important; /* 0 0 4px */
+  border-radius: var(--v-border-radius);
+  overflow: hidden;
+  background-color: white;
+}
+
+.v-card > .v-head {
+  display: flex;
+  line-height: 2em; /* 28px */
+  letter-spacing: 0.0094em; /* 0.1316px */
+}
+
+.v-card > .v-head > .v-title {
+  color: var(--v-primary);
+  border-radius: var(--v-border-radius) 0 var(--v-border-radius) 0;
+  padding: 0.375em 1.125em; /* 6px 18px */
+  background-color: #e0e0e0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  margin-bottom: 0.5625em; /* 9px */
+  font-size: 1.1429em; /* 18px */
+}
+
+.v-card > .v-head > .v-header {
+  display: inherit;
+  flex: 1 0 auto;
+  padding: 0 1.1429em 0.3571em 0.5714em; /* 0 16px 5px 8px */
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.v-card > .v-content:not(.v-no-padding) {
+  padding: 0 1.1429em 1.1429em; /* 0 16px 16px */
+}

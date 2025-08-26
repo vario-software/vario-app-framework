@@ -1,0 +1,64 @@
+.v-datagrid > .v-head {
+  padding: 0.5714em 1.1429em; /* 8px 16px */
+  display: flex;
+}
+
+.v-datagrid > .v-head > .v-input {
+  flex: 1 0 auto;
+  max-width: 17.8572em; /* 250px */
+  min-width: 7.1429em; /* 100px */
+}
+
+.v-datagrid > .v-head > .v-header {
+  flex: 1 0 auto;
+  display: inherit;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.v-datagrid > .v-foot {
+  text-align: right;
+  font-weight: 400;
+  font-size: 0.8571em; /* 12px */
+  line-height: 3.5em; /* 42px */
+  padding: 0.3334em 1.1667em 0.3334em 1.3334em; /* 4px 14px 4px 16px */
+  border-top: 1px solid rgb(0 0 0 / 12%);
+  color: #666;
+}
+
+.v-datagrid > table {
+  width: 100%;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+.v-datagrid > table > thead > tr > th,
+.v-datagrid > table > tbody > tr > td {
+  position: relative;
+  line-height: 4.1669em; /* 50px */
+  font-size: 0.8571em; /* 12px */
+  padding: 0;
+  text-align: center;
+}
+
+.v-datagrid > table > thead > tr > th {
+  background: var(--v-secondary);
+  font-weight: 500;
+  color: #fff;
+}
+
+.v-datagrid > table > tbody > tr > td {
+  cursor: pointer;
+}
+
+.v-datagrid > table > tbody > tr:hover > td::before {
+  content: '';
+  background: rgb(0 0 0 / 3%);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.v-datagrid > table > tbody > tr:nth-child(2n) > td {
+  background: rgb(0 0 0 / 6%);
+}

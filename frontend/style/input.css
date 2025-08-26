@@ -1,0 +1,96 @@
+.v-input {
+  position: relative;
+}
+
+.v-input::before,
+.v-input::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.v-input::before {
+  border-bottom: 1px solid rgb(0 0 0 / 24%);
+  transition: border-color 0.36s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.v-input:hover::before {
+  border-color: var(--v-secondary);
+}
+
+.v-input::after {
+  height: 0.1429em; /* 2px */
+  top: auto;
+  transform-origin: center bottom;
+  transform: scale3d(0, 1, 1);
+  background: var(--v-secondary);
+  transition: transform 0.36s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.v-input:focus-within::after {
+  transform: scale3d(1, 1, 1);
+}
+
+.v-input:focus-within .v-label {
+  color: var(--v-primary);
+}
+
+.v-input > input {
+  font: inherit;
+  line-height: 1.7143em; /* 24px */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  min-width: 0;
+  outline: 0;
+  user-select: auto;
+  letter-spacing: 0.0094em;
+  border: none;
+  color: rgb(0 0 0 / 87%);
+  padding: 1.1429em 0.4286em 0 0; /* 16px 6px 0 0 */
+}
+
+.v-input:has(.v-icon) > input {
+  padding-right: 1.7143em; /* 24px */
+}
+
+.v-input > .v-label {
+  pointer-events: none;
+  top: 0.7143em; /* 10px */
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  position: absolute;
+  letter-spacing: 0.0094em;
+  color: rgb(0 0 0 / 60%);
+  transform-origin: left top;
+  line-height: 1.4286em; /* 20px */
+}
+
+.v-input > .v-icon {
+  pointer-events: none;
+  top: 0.5556em; /* 10px */
+  position: absolute;
+  right: 0.2222em; /* 4px */
+  color: rgb(0 0 0 / 60%);
+  line-height: 1.1111em; /* 20px */
+}
+
+.v-input > .v-label,
+.v-input:focus-within > .v-label.v-stack, 
+.v-input:has(input:not(:placeholder-shown)) > .v-label.v-stack{
+  transform: translateY(-30%) scale(0.75);
+  max-width: 133%;
+}
+
+.v-input:focus-within > .v-label.v-stackl {
+  color: currentcolor;
+}
+
+.v-input > .v-label.v-stack {
+  transform: translateY(0);
+  transition:
+    transform 0.36s cubic-bezier(0.4, 0, 0.2, 1),
+    max-width 0.324s cubic-bezier(0.4, 0, 0.2, 1);
+}
