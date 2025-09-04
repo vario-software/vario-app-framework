@@ -63,6 +63,15 @@ const Migrator = class
       );
     },
 
+    getEavGroup: async groupKey =>
+    {
+      const eavGroup = await this.ApiAdapter.eav.getGroup(groupKey);
+
+      await this.methods.log(`EAV-Group "${eavGroup.label}" with id "${eavGroup.id}" successfully read\n`);
+
+      return eavGroup;
+    },
+
     createEavGroup: async eavGroup =>
     {
       eavGroup = await this.ApiAdapter.eav.setGroup(eavGroup);
