@@ -5,6 +5,15 @@ const Eav = class
     this.ApiAdapter = ApiAdapter;
   }
 
+  getGroup = async function(groupKey)
+  {
+    const { data: eavGroup } = await this.ApiAdapter.fetch(`/cmn/eav-groups/by-key/${groupKey}`, {
+      method: 'GET',
+    });
+
+    return eavGroup;
+  };
+
   setGroup = async function(eavGroup)
   {
     const existingGroup = await this.getGroupIdByKey(eavGroup.key);
