@@ -10,6 +10,7 @@ const setupException = require('#backend/setup/exception.js');
 const { log } = require('#backend/utils/logger.js');
 const OfflineToken = require('#backend/modules/offlineToken.js');
 const AccessToken = require('#backend/modules/accessToken.js');
+const BaseUrlCache = require('#backend/modules/baseUrlCache.js');
 
 const VarioCloudApp = class
 {
@@ -27,6 +28,7 @@ const VarioCloudApp = class
     this.log = options.log ?? log;
     this.offlineToken = options.offlineToken ?? new OfflineToken(this);
     this.accessToken = options.accessToken ?? new AccessToken(this);
+    this.baseUrlCache = options.baseUrlCache ?? new BaseUrlCache(this);
 
     this.erp = ErpApi;
 
