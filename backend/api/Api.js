@@ -1,5 +1,4 @@
-const http = require('http');
-const https = require('https');
+const { http, https } = require('follow-redirects');
 const { Readable } = require('stream');
 const { omitBy, isNil } = require('lodash');
 const fetchFn = require('#backend/api/helpers/fetch.js');
@@ -20,6 +19,7 @@ class Api
     resolveOn = 'end',
     timeout = 15 * 60 * 1000,
     suppressLogs = false,
+    followRedirects,
     body,
     inputStream,
     formData,
@@ -40,6 +40,7 @@ class Api
     this.secret = secret;
     this.restOptions = restOptions;
     this.suppressLogs = suppressLogs;
+    this.followRedirects = followRedirects;
 
     this.app = getApp();
 
@@ -77,6 +78,7 @@ class Api
     return {
       method: this.method,
       headers: omitBy(this.requestHeaders, isNil),
+      followRedirects: this.followRedirects,
       ...this.restOptions,
     };
   }

@@ -16,7 +16,7 @@ const VarioCloudApp = class
   constructor(client, options = {})
   {
     this.express = express();
-    this.port = '443';
+    this.port = '8080';
     this.uiPath = null;
     this.uiPrefix = '/ui';
 
