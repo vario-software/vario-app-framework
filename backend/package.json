@@ -12,6 +12,7 @@
     "express": "4.21.2",
     "http-proxy-middleware": "3.0.5",
     "jose": "6.0.11",
+    "lodash": "4.17.21",
     "lowdb": "^7.0.1"
   },
   "imports": {
