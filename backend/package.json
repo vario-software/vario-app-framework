@@ -1,6 +1,6 @@
 {
   "name": "@vario-app-framework/backend",
-  "version": "2025.29.0",
+  "version": "2025.33.0",
   "repository": "https://github.com/vario-software/vario-app-framework",
   "author": "VARIO Software AG",
   "homepage": "https://www.vario.ag",
@@ -10,8 +10,10 @@
     "body-parser": "2.2.0",
     "cors": "^2.8.5",
     "express": "4.21.2",
+    "follow-redirects": "1.15.11",
     "http-proxy-middleware": "3.0.5",
     "jose": "6.0.11",
+    "lodash": "4.17.21",
     "lowdb": "^7.0.1"
   },
   "imports": {

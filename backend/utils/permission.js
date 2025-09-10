@@ -1,11 +1,11 @@
-const { getApp, getContext, getExternalUserId } = require('#backend/utils/context.js');
+const { getAccessToken } = require('#backend/utils/context.js');
 const HttpError = require('#backend/utils/httpError.js');
 
 async function checkPermission(verb)
 {
-  const { superUser, permissions } = await getPermissions();
+  const { isSuperUser, permissions } = await getAccessToken();
 
-  if (!(superUser || permissions.includes(verb)))
+  if (!(isSuperUser || permissions.includes(verb)))
   {
     throw new HttpError(
       'APP_AUTHORIZATION_FAILED',
@@ -26,36 +26,6 @@ function checkPermissionMiddleware(verb)
 
     next();
   };
-}
-
-async function getPermissions()
-{
-  const context = getContext();
-
-  if (context.permissions)
-  {
-    return context.permissions;
-  }
-
-  const app = getApp();
-
-  const { appIdentifier } = app.client;
-
-  const userId = getExternalUserId();
-
-  const { data } = await app.erp.fetch(`/cmn/users/${userId}/authorization`, {
-    useInternalApi: true,
-  });
-
-  const { superUser, operations } = data;
-
-  const permissions = operations
-    .filter(({ permission }) => permission.resource === appIdentifier)
-    .map(({ permission }) => permission.verb);
-
-  context.permissions = { superUser, permissions };
-
-  return context.permissions;
 }
 
 module.exports = {
