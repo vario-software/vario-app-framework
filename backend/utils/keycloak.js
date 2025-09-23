@@ -31,7 +31,7 @@ async function refreshAccessToken(offlineToken, refreshUrl)
     await app.log(
       {
         request: { url: refreshUrl, body: '[secret]' },
-        response: `[secret(${Object.keys(typeof error.data === 'object' ? error.data : {})})]`,
+        response: `[secret(${Object.keys(typeof error?.data === 'object' ? error.data : {})})]`,
         duration: `${(performance.now() - timer).toFixed(2)}ms`,
       },
       'utils/keycloak',
