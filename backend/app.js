@@ -40,7 +40,6 @@ const VarioCloudApp = class
     this.apiServer = express.Router();
 
     this.apiServer.use(setupContext(this));
-    this.apiServer.use(setupException(this));
     this.apiServer.use(appAuthentication);
 
     this.express.use(options.apiPrefix ?? '/api', this.apiServer);
@@ -76,6 +75,8 @@ const VarioCloudApp = class
 
       this.express.use(this.uiPrefix, this.uiServer);
     }
+
+    this.express.use(setupException(this));
 
     return new Promise((resolve, reject) =>
     {
