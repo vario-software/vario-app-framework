@@ -5,7 +5,7 @@ async function checkPermission(verb)
 {
   const { isSuperUser, permissions } = await getAccessToken();
 
-  if (!(isSuperUser || permissions.includes(verb)))
+  if (!(isSuperUser || permissions?.includes(verb)))
   {
     throw new HttpError(
       'APP_AUTHORIZATION_FAILED',

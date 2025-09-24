@@ -46,21 +46,25 @@ class ErpApi extends Api
 
     return singletonPromise.run(tenant, async () =>
     {
+      const savedAccessToken = await this.app.accessToken.get(tenant);
+
+      if (savedAccessToken)
+      {
+        const baseUrl = await this.app.baseUrlCache.get();
+
+        return {
+          baseUrl,
+          Authorization: `Bearer ${savedAccessToken}`,
+        };
+      }
+
       const offlineToken = await this.app.offlineToken.get(tenant);
       const { iss } = await validateOfflineToken(offlineToken);
 
       const domain = iss.replace('https://sso.', '').split('/')[0];
       const baseUrl = `https://${tenant}.${domain}`;
 
-      const savedAccessToken = await this.app.accessToken.get(tenant);
-
-      if (savedAccessToken)
-      {
-        return {
-          baseUrl,
-          Authorization: `Bearer ${savedAccessToken}`,
-        };
-      }
+      await this.app.baseUrlCache.set(baseUrl);
 
       const {
         access_token: accessToken,
