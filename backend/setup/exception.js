@@ -5,16 +5,10 @@ function setupException()
 {
   process.on('unhandledRejection', reason => errorHandling(reason));
 
-  return (req, res, next) =>
+  // eslint-disable-next-line no-unused-vars
+  return (error, req, res, next) =>
   {
-    try
-    {
-      next();
-    }
-    catch (error)
-    {
-      errorHandling(error);
-    }
+    errorHandling(error);
   };
 }
 
