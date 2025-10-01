@@ -312,7 +312,7 @@ const Migrator = class
           }),
         });
 
-      await this.methods.log(`App-Script-Trriger with id "${triggerId}" successfully updated\n`);
+      await this.methods.log(`App-Script-Trigger with id "${triggerId}" successfully updated\n`);
     },
   };
 };
