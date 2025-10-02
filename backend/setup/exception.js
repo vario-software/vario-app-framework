@@ -40,7 +40,7 @@ async function errorHandling(error)
     console.warn(error);
   }
 
-  if (response && !response.headersSent && error instanceof HttpError)
+  if (response && !response.headersSent)
   {
     response.status(statusCode).send({ error: message, data }).end();
   }
