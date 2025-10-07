@@ -12,7 +12,7 @@
     "express": "4.21.2",
     "follow-redirects": "1.15.11",
     "http-proxy-middleware": "3.0.5",
-    "jose": "6.0.11",
+    "jose": "6.1.0",
     "lodash": "4.17.21",
     "lowdb": "^7.0.1"
   },
