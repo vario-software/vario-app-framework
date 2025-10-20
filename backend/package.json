@@ -1,11 +1,12 @@
 {
-  "name": "@vario-app-framework/backend",
-  "version": "2025.34.0",
+  "name": "@vario-software/vario-app-framework-backend",
+  "version": "2025.37.0",
   "repository": "https://github.com/vario-software/vario-app-framework",
   "author": "VARIO Software AG",
   "homepage": "https://www.vario.ag",
   "description": "The VARIO App Framework makes it easy and quick to set up a VARIO Cloud App in Node.js by handling API communication, authentication and providing useful built-in utilities.",
   "license": "MIT",
+  "publishConfig": { "access": "public" },
   "dependencies": {
     "body-parser": "2.2.0",
     "cors": "^2.8.5",

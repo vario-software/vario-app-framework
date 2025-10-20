@@ -1,9 +1,10 @@
 {
-  "name": "@vario-app-framework/frontend",
-  "version": "2025.34.0",
+  "name": "@vario-software/vario-app-framework-frontend",
+  "version": "2025.37.0",
   "repository": "https://github.com/vario-software/vario-app-framework",
   "author": "VARIO Software AG",
   "homepage": "https://www.vario.ag",
   "description": "Provides CSS and useful JavaScript utilities for app features and capabilities to make a VARIO Cloud App appear in the corporate design, giving it a consistent look.",
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": { "access": "public" }
 }
