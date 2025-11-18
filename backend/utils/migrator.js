@@ -47,6 +47,8 @@ const Migrator = class
     }
     catch (error)
     {
+      await this.app.onMigrationError(error);
+
       await this.methods.log(`Migration "${migration}" failed\n\n${error.message}`, 'ERROR', error.message);
     }
   };

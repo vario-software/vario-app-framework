@@ -12,10 +12,17 @@ const OfflineToken = require('#backend/modules/offlineToken.js');
 const AccessToken = require('#backend/modules/accessToken.js');
 const BaseUrlCache = require('#backend/modules/baseUrlCache.js');
 
+let exceptionHandler;
+
 const VarioCloudApp = class
 {
   constructor(client, options = {})
   {
+    this.onUnhandledError = options.onUnhandledError ?? console.error;
+    this.onMigrationError = options.onMigrationError ?? console.error;
+
+    exceptionHandler = setupException(this);
+
     this.express = express();
     this.port = '8080';
     this.uiPath = null;
@@ -26,6 +33,7 @@ const VarioCloudApp = class
     this.client = client;
 
     this.log = options.log ?? log;
+
     this.offlineToken = options.offlineToken ?? new OfflineToken(this);
     this.accessToken = options.accessToken ?? new AccessToken(this);
     this.baseUrlCache = options.baseUrlCache ?? new BaseUrlCache(this);
@@ -78,7 +86,7 @@ const VarioCloudApp = class
       this.express.use(this.uiPrefix, this.uiServer);
     }
 
-    this.express.use(setupException(this));
+    this.express.use(exceptionHandler);
 
     return new Promise((resolve, reject) =>
     {
