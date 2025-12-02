@@ -124,7 +124,7 @@ const Migrator = class
       await this.methods.log(`Webhook for destination "${destinationQueue}" deregistered\n`);
     },
 
-    createSalesChannelBackend: async label =>
+    createSalesChannelBackend: async (label, validChannelTypes) =>
     {
       const { data: salesChannelBackend } = await this.ApiAdapter.fetch('/erp/sales-channels/backend', {
         method: 'POST',
@@ -132,11 +132,24 @@ const Migrator = class
           appId: this.app.client.appIdentifier,
           label,
           type: 'APP',
+          validChannelTypes,
           active: true,
         }),
       });
 
       await this.methods.log(`Sales-Channel-Backend with id "${salesChannelBackend.id}" successfully created\n`);
+
+      return salesChannelBackend;
+    },
+
+    changeSalesChannelBackend: async body =>
+    {
+      const { data: salesChannelBackend } = await this.ApiAdapter.fetch(`/erp/sales-channels/backend/${body.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      });
+
+      await this.methods.log(`Sales-Channel-Backend with id "${salesChannelBackend.id}" successfully updated\n`);
 
       return salesChannelBackend;
     },
