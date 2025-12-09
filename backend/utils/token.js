@@ -1,4 +1,4 @@
-const { jwtVerify, decodeJwt } = require('jose');
+const { jwtVerify, decodeJwt, importJWK } = require('jose');
 const { getApp } = require('#backend/utils/context.js');
 
 function validateOfflineToken(offlineToken)
@@ -48,30 +48,35 @@ function validateAppToken(appToken)
 
     const app = getApp();
 
-    const { clientSecret, appIdentifier } = app.client;
+    const { appIdentifier, appJWK } = app.client;
 
-    const key = new TextEncoder().encode(clientSecret);
+    const jwk = JSON.parse(appJWK).keys[0];
 
-    jwtVerify(appToken, key)
-      .then(({ payload }) =>
+    importJWK(jwk, 'ES256')
+      .then(key =>
       {
-        const { aud, exp } = payload;
+        jwtVerify(appToken, key)
+          .then(({ payload }) =>
+          {
+            const { aud, exp } = payload;
 
-        if (!aud || aud !== appIdentifier)
-        {
-          console.log('First cond', !aud, aud !== appIdentifier);
-          reject();
-          return;
-        }
+            if (!aud || aud !== appIdentifier)
+            {
+              console.log('First cond', !aud, aud !== appIdentifier);
+              reject();
+              return;
+            }
 
-        if (!exp || exp < (Date.now() / 1000))
-        {
-          console.log('Second cond', !exp, exp < (Date.now() / 1000));
-          reject();
-          return;
-        }
+            if (!exp || exp < (Date.now() / 1000))
+            {
+              console.log('Second cond', !exp, exp < (Date.now() / 1000));
+              reject();
+              return;
+            }
 
-        resolve(payload);
+            resolve(payload);
+          })
+          .catch(reject);
       })
       .catch(reject);
   });

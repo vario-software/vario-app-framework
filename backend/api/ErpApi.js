@@ -1,5 +1,5 @@
 const Api = require('#backend/api/Api.js');
-const { getTenant } = require('#backend/utils/context.js');
+const { getTenant, getAppToken } = require('#backend/utils/context.js');
 
 const PromiseSingletonMap = require('#backend/utils/promiseSingletonMap.js');
 const refreshAccessToken = require('#backend/utils/keycloak.js');
@@ -7,6 +7,7 @@ const Eav = require('#backend/api/modules/eav.js');
 const Migration = require('#backend/api/modules/migration.js');
 const TextEnum = require('#backend/api/modules/textEnum.js');
 const Webhook = require('#backend/api/modules/webhook.js');
+const PermittedToken = require('#backend/api/modules/permittedToken.js');
 const { validateOfflineToken } = require('#backend/utils/token.js');
 
 const singletonPromise = new PromiseSingletonMap();
@@ -15,6 +16,10 @@ class ErpApi extends Api
   async onBeforeRequest()
   {
     const { baseUrl, Authorization } = await this.getAuthorization();
+
+    this.setHeaders({
+      'X-Forwarded-App-Token': getAppToken(),
+    });
 
     this.setAuthorization(Authorization);
 
@@ -90,5 +95,6 @@ ErpApi.migration = new Migration(ErpApi);
 ErpApi.eav = new Eav(ErpApi);
 ErpApi.textenum = new TextEnum(ErpApi);
 ErpApi.webhook = new Webhook(ErpApi);
+ErpApi.permittedToken = new PermittedToken(ErpApi);
 
 module.exports = ErpApi;

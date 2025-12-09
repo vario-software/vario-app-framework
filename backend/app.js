@@ -111,12 +111,21 @@ function validateClient(client)
     throw new Error('client config missing');
   }
 
-  const missingProps = ['clientId', 'clientSecret', 'appIdentifier']
+  const missingProps = ['clientId', 'clientSecret', 'appIdentifier', 'appJWK']
     .filter(prop => !client[prop]);
 
   if (missingProps.length)
   {
     throw new Error(`client config is missing: ${missingProps.join()}`);
+  }
+
+  try
+  {
+    JSON.parse(client.appJWK);
+  }
+  catch
+  {
+    throw new Error('appJWK is not a valid JSON');
   }
 }
 

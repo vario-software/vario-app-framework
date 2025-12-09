@@ -21,7 +21,7 @@ function setupContext(app)
     res.on('finish', async () =>
     {
       await app.log(
-        `${(performance.now() - specificContext.startTime).toFixed(2)}ms`,
+        `${(performance.now() - specificContext.startTime).toFixed(2)}ms (${res.statusCode} ${res.statusMessage})`,
         'setup/context/finish',
         'DEBUG',
       );

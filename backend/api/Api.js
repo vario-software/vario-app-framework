@@ -19,6 +19,7 @@ class Api
     resolveOn = 'end',
     timeout = 15 * 60 * 1000,
     suppressLogs = false,
+    secretsToMask = ['value'],
     followRedirects,
     body,
     inputStream,
@@ -41,6 +42,7 @@ class Api
     this.restOptions = restOptions;
     this.suppressLogs = suppressLogs;
     this.followRedirects = followRedirects;
+    this.secretsToMask = secretsToMask;
 
     this.app = getApp();
 
@@ -171,7 +173,7 @@ class Api
           requestOptions: this.requestOptions,
           body: this.body,
         },
-        response: this.secret ? maskSpecificKey(response, 'value') : response,
+        response: this.secret ? maskSpecificKey(response, this.secretsToMask) : response,
         duration: `${(performance.now() - this.timer).toFixed(2)}ms`,
         retryCount: this.retryCount,
       };
@@ -422,7 +424,7 @@ Api.redirectRequest = redirectRequestFn;
 
 module.exports = Api;
 
-function maskSpecificKey(response, keyToMask = 'value', mask = '[secret]')
+function maskSpecificKey(response, secretsToMask = ['value'], mask = '[secret]')
 {
   if (!response || typeof response !== 'object')
   {
@@ -431,13 +433,13 @@ function maskSpecificKey(response, keyToMask = 'value', mask = '[secret]')
 
   return Object.keys(response).reduce((acc, key) =>
   {
-    if (key === keyToMask)
+    if (secretsToMask.includes(key))
     {
       acc[key] = mask;
     }
     else if (typeof response[key] === 'object' && response[key] !== null)
     {
-      acc[key] = maskSpecificKey(response[key], keyToMask, mask);
+      acc[key] = maskSpecificKey(response[key], secretsToMask, mask);
     }
     else
     {

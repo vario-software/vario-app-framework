@@ -26,6 +26,12 @@ function appAuthentication(req, res, next)
       context.appToken = token;
       context.accessToken = accessToken;
 
+      if (accessToken.tokenType === 'PERMITTED_TOKEN')
+      {
+        res.status(401).end();
+        return;
+      }
+
       next();
     })
     .catch(error =>
