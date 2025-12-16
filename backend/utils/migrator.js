@@ -349,6 +349,15 @@ const Migrator = class
 
     addAppScriptingTrigger: async (triggerId, script) =>
     {
+      const existingProxyId = await this.methods.getAppScriptingTriggerId(triggerId);
+
+      if (existingProxyId)
+      {
+        this.methods.updateAppScriptingTrigger(triggerId, script, existingProxyId);
+
+        return;
+      }
+
       await this.ApiAdapter.fetch(
         '/community/latest/cmn/system/app-scripting-proxy',
         {
@@ -361,7 +370,43 @@ const Migrator = class
           }),
         });
 
+      await this.methods.log(`App-Script-Trigger with id "${triggerId}" successfully created\n`);
+    },
+
+    updateAppScriptingTrigger: async (triggerId, script, id) =>
+    {
+      if (!id)
+      {
+        id = await this.getAppScriptingTriggerId(triggerId);
+      }
+
+      await this.ApiAdapter.fetch(
+        `/community/latest/cmn/system/app-scripting-proxy/${id}`,
+        {
+          useInternalApi: true,
+          method: 'PUT',
+          body: JSON.stringify({
+            appIdentifier: this.app.client.appIdentifier,
+            triggerId,
+            script,
+          }),
+        });
+
       await this.methods.log(`App-Script-Trigger with id "${triggerId}" successfully updated\n`);
+    },
+
+    getAppScriptingTriggerId: async triggerId =>
+    {
+      const { data: existingProxy } = await this.ApiAdapter.vql({
+        statement: `
+SELECT id
+  FROM system.queryAppScriptingProxies 
+ WHERE appIdentifier = '${this.app.client.appIdentifier}'
+   AND triggerId = '${triggerId}'
+`,
+      });
+
+      return existingProxy[0]?.id;
     },
   };
 };
