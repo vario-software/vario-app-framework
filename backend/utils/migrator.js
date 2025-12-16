@@ -53,6 +53,26 @@ const Migrator = class
     }
   };
 
+  always = async function (key, callback)
+  {
+    const migration = `${this.key}.${key}`;
+
+    const context = getContext();
+
+    context.migration = migration;
+
+    try
+    {
+      await callback(this.methods, this.migrationResults);
+    }
+    catch (error)
+    {
+      await this.app.onMigrationError(error);
+
+      await this.methods.log(`Migration "${migration}" failed\n\n${error.message}`, 'ERROR', error.message);
+    }
+  };
+
   methods = {
     log: async (message, level = 'INFO') =>
     {
@@ -97,6 +117,20 @@ const Migrator = class
       const eavGroup = await this.ApiAdapter.eav.deleteGroup(groupKey);
 
       await this.methods.log(`EAV-Group "${groupKey}" successfully deleted\n`);
+
+      return eavGroup;
+    },
+
+    removeDataFromEavGroup: async (groupKey, attributeKeys) =>
+    {
+      const eavGroup = await this.ApiAdapter.eav.removeDataFromGroup(groupKey, attributeKeys);
+
+      const hasAttributeKeys = Array.isArray(attributeKeys) && attributeKeys.length > 0;
+      const logMessage = hasAttributeKeys
+        ? `Data for the specified attributes (${attributeKeys.join(', ')}) in EAV group "${groupKey}" was successfully removed.\n`
+        : `All data from EAV group "${groupKey}" was successfully removed.\n`;
+
+      await this.methods.log(logMessage);
 
       return eavGroup;
     },

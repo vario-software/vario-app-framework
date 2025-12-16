@@ -35,9 +35,7 @@ const Eav = class
 
   changeGroup = async function (groupKey, callback)
   {
-    let { data: eavGroup } = await this.ApiAdapter.fetch(`/cmn/eav-groups/by-key/${groupKey}`, {
-      method: 'GET',
-    });
+    let eavGroup = await this.getGroup(groupKey);
 
     eavGroup = callback(eavGroup);
 
@@ -51,7 +49,7 @@ const Eav = class
 
   deleteGroup = async function (groupKey)
   {
-    const { data: eavGroup } = await this.ApiAdapter.fetch(`/cmn/eav-groups/by-key/${groupKey}`);
+    const eavGroup = await this.getGroup(groupKey);
 
     await this.ApiAdapter.fetch(`/cmn/eav-groups/${eavGroup.id}/remove-data`, {
       method: 'POST',
@@ -65,11 +63,27 @@ const Eav = class
     return true;
   };
 
+  removeDataFromGroup = async function (groupKey, attributeKeys = [])
+  {
+    const eavGroup = await this.getGroup(groupKey);
+
+    const attributeId = attributeKeys
+      .map(attrKey => eavGroup.attributes?.find(({ key }) => key === attrKey)?.id)
+      .filter(id => id !== null || id !== undefined);
+
+    await this.ApiAdapter.fetch(`/cmn/eav-groups/${eavGroup.id}/remove-data`, {
+      method: 'POST',
+      body: JSON.stringify({ entities: eavGroup.entities, attributeId }),
+    });
+
+    return true;
+  };
+
   getGroupIdByKey = async function(groupKey)
   {
     try
     {
-      const { data: eavGroup } = await this.ApiAdapter.fetch(`/cmn/eav-groups/by-key/${groupKey}`);
+      const eavGroup = await this.getGroup(groupKey);
 
       return eavGroup.id;
     }
