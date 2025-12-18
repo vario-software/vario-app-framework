@@ -1,7 +1,7 @@
 const { getRequest } = require('#backend/utils/context.js');
 const { getApp } = require('#backend/utils/context.js');
 
-const TextEnum = class
+const Webhook = class
 {
   constructor(ApiAdapter)
   {
@@ -41,4 +41,4 @@ const TextEnum = class
   };
 };
 
-module.exports = TextEnum;
+module.exports = Webhook;

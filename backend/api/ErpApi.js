@@ -1,5 +1,5 @@
 const Api = require('#backend/api/Api.js');
-const { getTenant, getAppToken } = require('#backend/utils/context.js');
+const { getTenant, getAppToken, getContext } = require('#backend/utils/context.js');
 
 const PromiseSingletonMap = require('#backend/utils/promiseSingletonMap.js');
 const refreshAccessToken = require('#backend/utils/keycloak.js');
@@ -13,13 +13,32 @@ const { validateOfflineToken } = require('#backend/utils/token.js');
 const singletonPromise = new PromiseSingletonMap();
 class ErpApi extends Api
 {
+  constructor(path, options = {})
+  {
+    const {
+      runAsAppUser = false,
+    } = getContext();
+
+    const {
+      excecuteAsAppUser = runAsAppUser,
+      ...restOptions
+    } = options;
+
+    super(path, restOptions);
+
+    this.excecuteAsAppUser = excecuteAsAppUser;
+  }
+
   async onBeforeRequest()
   {
     const { baseUrl, Authorization } = await this.getAuthorization();
 
-    this.setHeaders({
-      'X-Forwarded-App-Token': getAppToken(),
-    });
+    if (!this.excecuteAsAppUser)
+    {
+      this.setHeaders({
+        'X-Forwarded-App-Token': getAppToken(),
+      });
+    }
 
     this.setAuthorization(Authorization);
 
