@@ -20,20 +20,20 @@ class ErpApi extends Api
     } = getContext();
 
     const {
-      excecuteAsAppUser = runAsAppUser,
+      executeAsAppUser = runAsAppUser,
       ...restOptions
     } = options;
 
     super(path, restOptions);
 
-    this.excecuteAsAppUser = excecuteAsAppUser;
+    this.executeAsAppUser = executeAsAppUser;
   }
 
   async onBeforeRequest()
   {
     const { baseUrl, Authorization } = await this.getAuthorization();
 
-    if (!this.excecuteAsAppUser)
+    if (!this.executeAsAppUser)
     {
       this.setHeaders({
         'X-Forwarded-App-Token': getAppToken(),
