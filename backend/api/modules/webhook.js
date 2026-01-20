@@ -8,7 +8,7 @@ const Webhook = class
     this.ApiAdapter = ApiAdapter;
   }
 
-  register = async function(destinationQueue, url)
+  register = async function(destinationQueue, url, destinationOwner)
   {
     const apiUrl = `${process.env.WEBHOOK_HOST ?? `https://${getRequest().get('host')}`}`;
 
@@ -18,13 +18,14 @@ const Webhook = class
       method: 'POST',
       body: JSON.stringify({
         url: `${apiUrl}${url}`,
+        destinationOwner,
         destinationQueue,
         appIdentifier: app.client.appIdentifier,
       }),
     });
   };
 
-  deregister = async function(destinationQueue, url)
+  deregister = async function(destinationQueue, url, destinationOwner)
   {
     const apiUrl = `${process.env.WEBHOOK_HOST ?? `https://${getRequest().get('host')}`}`;
 
@@ -34,6 +35,7 @@ const Webhook = class
       method: 'POST',
       body: JSON.stringify({
         url: `${apiUrl}${url}`,
+        destinationOwner,
         destinationQueue,
         appIdentifier: app.client.appIdentifier,
       }),

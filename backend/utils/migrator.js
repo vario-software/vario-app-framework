@@ -144,16 +144,16 @@ const Migrator = class
       return textEnumGroup;
     },
 
-    registerWebhook: async (destinationQueue, url) =>
+    registerWebhook: async (destinationQueue, url, destinationOwner) =>
     {
-      await this.ApiAdapter.webhook.register(destinationQueue, url);
+      await this.ApiAdapter.webhook.register(destinationQueue, url, destinationOwner);
 
       await this.methods.log(`Webhook for destination "${destinationQueue}" registered\n`);
     },
 
-    deregisterWebhook: async (destinationQueue, url) =>
+    deregisterWebhook: async (destinationQueue, url, destinationOwner) =>
     {
-      await this.ApiAdapter.webhook.deregister(destinationQueue, url);
+      await this.ApiAdapter.webhook.deregister(destinationQueue, url, destinationOwner);
 
       await this.methods.log(`Webhook for destination "${destinationQueue}" deregistered\n`);
     },
@@ -353,22 +353,79 @@ const Migrator = class
 
       if (existingProxyId)
       {
-        this.methods.updateAppScriptingTrigger(triggerId, script, existingProxyId);
+        await this.methods.updateAppScriptingTrigger(triggerId, script, existingProxyId);
 
         return;
       }
+
+      const { data: existingGroups } = await this.ApiAdapter.fetch(
+        '/cmn/computed-queries/scripting/script-module-groups',
+        {
+          useInternalApi: true,
+          method: 'POST',
+          body: {
+            adhocPreset: {
+              queryPredicate: {
+                type: 'FILTER',
+                operator: 'EQUALS',
+                property: 'name',
+                values: [this.app.client.appIdentifier],
+              },
+              results: [
+                { property: 'id' },
+                { property: 'name' },
+              ],
+            },
+          },
+        },
+      );
+
+      let scriptGroup;
+
+      if (existingGroups?.data && existingGroups.data.length > 0)
+      {
+        scriptGroup = existingGroups.data[0];
+      }
+      else
+      {
+        const { data: newGroup } = await this.ApiAdapter.fetch(
+          '/cmn/scripting/module-groups',
+          {
+            useInternalApi: true,
+            method: 'POST',
+            body: { name: this.app.client.appIdentifier },
+          },
+        );
+        scriptGroup = newGroup;
+      }
+
+      const { data: scriptModule } = await this.ApiAdapter.fetch(
+        '/cmn/scripting/modules/presettings',
+        {
+          useInternalApi: true,
+          method: 'POST',
+          body: {
+            name: triggerId,
+            script: typeof script === 'string' ? script : JSON.stringify(script),
+            domain: 'app',
+            groupRef: { id: scriptGroup.id },
+            permissionAggregation: {},
+          },
+        },
+      );
 
       await this.ApiAdapter.fetch(
         '/community/latest/cmn/system/app-scripting-proxy',
         {
           useInternalApi: true,
           method: 'POST',
-          body: JSON.stringify({
+          body: {
             appIdentifier: this.app.client.appIdentifier,
             triggerId,
-            script,
-          }),
-        });
+            scriptModuleRef: { id: scriptModule.id },
+          },
+        },
+      );
 
       await this.methods.log(`App-Script-Trigger with id "${triggerId}" successfully created\n`);
     },
@@ -377,20 +434,45 @@ const Migrator = class
     {
       if (!id)
       {
-        id = await this.getAppScriptingTriggerId(triggerId);
+        id = await this.methods.getAppScriptingTriggerId(triggerId);
       }
 
-      await this.ApiAdapter.fetch(
+      const { data: proxy } = await this.ApiAdapter.fetch(
         `/community/latest/cmn/system/app-scripting-proxy/${id}`,
         {
           useInternalApi: true,
+          method: 'GET',
+        },
+      );
+
+      const scriptModuleId = proxy?.scriptModuleRef?.id;
+
+      if (!scriptModuleId)
+      {
+        await this.methods.log(`App-Script-Trigger with id "${triggerId}" has no scriptModuleRef\n`, 'ERROR');
+
+        return;
+      }
+
+      const { data: existingScriptModule } = await this.ApiAdapter.fetch(
+        `/cmn/scripting/modules/${scriptModuleId}/presettings`,
+        {
+          useInternalApi: true,
+          method: 'GET',
+        },
+      );
+
+      await this.ApiAdapter.fetch(
+        `/cmn/scripting/modules/${scriptModuleId}/presettings`,
+        {
+          useInternalApi: true,
           method: 'PUT',
-          body: JSON.stringify({
-            appIdentifier: this.app.client.appIdentifier,
-            triggerId,
-            script,
-          }),
-        });
+          body: {
+            ...existingScriptModule,
+            script: typeof script === 'string' ? script : JSON.stringify(script),
+          },
+        },
+      );
 
       await this.methods.log(`App-Script-Trigger with id "${triggerId}" successfully updated\n`);
     },
@@ -400,7 +482,7 @@ const Migrator = class
       const { data: existingProxy } = await this.ApiAdapter.vql({
         statement: `
 SELECT id
-  FROM system.queryAppScriptingProxies 
+  FROM system.queryAppScriptingProxies
  WHERE appIdentifier = '${this.app.client.appIdentifier}'
    AND triggerId = '${triggerId}'
 `,

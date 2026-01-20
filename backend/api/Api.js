@@ -227,11 +227,13 @@ class Api
 
   async onError(error)
   {
+    const maskedBody = this.suppressLogs ? '[secret]' : this.body;
+
     const message = {
       request: {
         requestUrl: this.fullPath,
         requestOptions: this.requestOptions,
-        body: this.body,
+        body: maskedBody,
       },
       response: error,
       duration: `${(performance.now() - this.timer).toFixed(2)}ms`,
@@ -248,7 +250,7 @@ class Api
         request: {
           requestUrl: this.fullPath,
           requestOptions: this.requestOptions,
-          body: this.body,
+          body: maskedBody,
         },
         response: {
           data: error,
