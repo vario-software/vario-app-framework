@@ -8,7 +8,7 @@ const Migration = require('#backend/api/modules/migration.js');
 const TextEnum = require('#backend/api/modules/textEnum.js');
 const Webhook = require('#backend/api/modules/webhook.js');
 const PermittedToken = require('#backend/api/modules/permittedToken.js');
-const { validateOfflineToken } = require('#backend/utils/token.js');
+const { validateOfflineToken, isAppTokenExpired, refreshAppToken } = require('#backend/utils/token.js');
 
 const singletonPromise = new PromiseSingletonMap();
 class ErpApi extends Api
@@ -35,6 +35,11 @@ class ErpApi extends Api
 
     if (!this.executeAsAppUser)
     {
+      if (isAppTokenExpired())
+      {
+        await refreshAppToken();
+      }
+
       this.setHeaders({
         'X-Forwarded-App-Token': getAppToken(),
       });

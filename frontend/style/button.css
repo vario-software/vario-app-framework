@@ -18,7 +18,7 @@
   background: transparent radial-gradient(circle, transparent 1%, white 1%) center/14000%;
 }
 
-.v-button:active {
+.v-button:not(:disabled):active {
   background-color: color-mix(in srgb, var(--v-accent), transparent 60%);
   background-size: 100%;
   transition: background 0s;
@@ -39,7 +39,7 @@
   opacity: 0.1;
 }
 
-.v-button:active::after {
+.v-button:not(:disabled):active::after {
   opacity: 0.14;
 }
 

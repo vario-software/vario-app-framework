@@ -1,5 +1,6 @@
 const { jwtVerify, decodeJwt, importJWK } = require('jose');
 const { getApp } = require('#backend/utils/context.js');
+const { getAppToken, getContext } = require('#backend/utils/context.js');
 
 function validateOfflineToken(offlineToken)
 {
@@ -82,7 +83,45 @@ function validateAppToken(appToken)
   });
 }
 
+function isAppTokenExpired()
+{
+  const { accessToken } = getContext();
+
+  const { exp } = accessToken;
+
+  return ((exp - 2) < (Date.now() / 1000));
+}
+
+async function refreshAppToken()
+{
+  const appToken = getAppToken();
+  const app = getApp();
+
+  const { data } = await app.erp.fetch(`/cmn/apps/${app.client.appIdentifier}/refresh-token`, {
+    method: 'POST',
+    body: appToken,
+    useInternalApi: true,
+    headers: {
+      'Content-Type': 'text/plain',
+    },
+    secret: true,
+    executeAsAppUser: true,
+    secretsToMask: ['bearerToken'],
+  });
+
+  const newAppToken = data.bearerToken;
+
+  const accessToken = await validateAppToken(newAppToken);
+
+  const context = getContext();
+
+  context.appToken = newAppToken;
+  context.accessToken = accessToken;
+}
+
 module.exports = {
   validateOfflineToken,
   validateAppToken,
+  isAppTokenExpired,
+  refreshAppToken,
 };
