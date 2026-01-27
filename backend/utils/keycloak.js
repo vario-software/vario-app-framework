@@ -26,20 +26,26 @@ async function refreshAccessToken(offlineToken, refreshUrl)
 
   const timer = performance.now();
 
-  const { data } = await VarioApi.fetch(refreshUrl, refreshOptions).catch(async error =>
-  {
-    await app.log(
-      {
-        request: { url: refreshUrl, body: '[secret]' },
-        response: `[secret(${Object.keys(typeof error?.data === 'object' ? error.data : {})})]`,
-        duration: `${(performance.now() - timer).toFixed(2)}ms`,
-      },
-      'utils/keycloak',
-      'DEBUG',
-    );
+  const { data } = await VarioApi.fetch(refreshUrl, refreshOptions)
+    .catch(async error =>
+    {
+      await app.log(
+        {
+          request: { url: refreshUrl, body: '[secret]' },
+          response: `[secret(${Object.keys(typeof error?.data === 'object' ? error.data : {})})]`,
+          duration: `${(performance.now() - timer).toFixed(2)}ms`,
+        },
+        'utils/keycloak',
+        'DEBUG',
+      );
 
-    throw error;
-  });
+      if (app.onKeycloakError)
+      {
+        app.onKeycloakError(error);
+      }
+
+      throw error;
+    });
 
   await app.log(
     {

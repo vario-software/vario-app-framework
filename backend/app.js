@@ -20,6 +20,7 @@ const VarioCloudApp = class
   {
     this.onUnhandledError = options.onUnhandledError ?? console.error;
     this.onMigrationError = options.onMigrationError ?? console.error;
+    this.onKeycloakError = options.onKeycloakError;
 
     exceptionHandler = setupException(this);
 
