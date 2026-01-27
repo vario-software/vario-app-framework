@@ -45,7 +45,7 @@ const VarioCloudApp = class
 
     this.express.use(cors());
 
-    this.express.use(bodyParser.json(options.bodyParser));
+    this.express.use(bodyParser.json({ strict: false, ...options.bodyParser }));
     this.express.use(bodyParser.raw({ type: 'application/octet-stream', limit: 100 * 1024 * 1024 }));
 
     this.apiServer = express.Router();
