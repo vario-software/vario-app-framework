@@ -1,7 +1,14 @@
 const util = require('util');
 const { getTenant, getRequestId, getRequest } = require('#backend/utils/context.js');
 
-const formatLog = obj => util.inspect(obj, { depth: null, colors: true, maxArrayLength: null });
+const format = object => util.inspect(object, {
+  depth: 7,
+  colors: true,
+  breakLength: 120,
+  maxArrayLength: 20,
+  maxStringLength: 5000,
+  compact: 3,
+});
 
 async function log(message, loggerName, level = 'DEBUG')
 {
@@ -11,19 +18,19 @@ async function log(message, loggerName, level = 'DEBUG')
   switch (level)
   {
     case 'WARNING':
-      console.warn(formatLog({ tenant, message, requestId, loggerName }));
+      console.warn(format({ tenant, message, requestId, loggerName }));
       break;
     case 'ERROR':
-      console.error(formatLog({ tenant, message, requestId, loggerName }));
+      console.error(format({ tenant, message, requestId, loggerName }));
       break;
     case 'INFO':
-      console.info(formatLog({ tenant, message, requestId, loggerName }));
+      console.info(format({ tenant, message, requestId, loggerName }));
       break;
     case 'DEBUG':
-      console.debug(formatLog({ tenant, message, requestId, loggerName, requestPath: getRequest().path }));
+      console.debug(format({ tenant, message, requestId, loggerName, requestPath: getRequest().path }));
       break;
     default:
-      console.log(formatLog({ tenant, message, requestId, loggerName }));
+      console.log(format({ tenant, message, requestId, loggerName }));
   }
 }
 
