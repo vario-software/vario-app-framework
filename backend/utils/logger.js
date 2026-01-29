@@ -1,4 +1,7 @@
+const util = require('util');
 const { getTenant, getRequestId, getRequest } = require('#backend/utils/context.js');
+
+const formatLog = obj => util.inspect(obj, { depth: null, colors: true, maxArrayLength: null });
 
 async function log(message, loggerName, level = 'DEBUG')
 {
@@ -8,19 +11,19 @@ async function log(message, loggerName, level = 'DEBUG')
   switch (level)
   {
     case 'WARNING':
-      console.warn({ tenant, message, requestId, loggerName });
+      console.warn(formatLog({ tenant, message, requestId, loggerName }));
       break;
     case 'ERROR':
-      console.error({ tenant, message, requestId, loggerName });
+      console.error(formatLog({ tenant, message, requestId, loggerName }));
       break;
     case 'INFO':
-      console.info({ tenant, message, requestId, loggerName });
+      console.info(formatLog({ tenant, message, requestId, loggerName }));
       break;
     case 'DEBUG':
-      console.debug({ tenant, message, requestId, loggerName, requestPath: getRequest().path });
+      console.debug(formatLog({ tenant, message, requestId, loggerName, requestPath: getRequest().path }));
       break;
     default:
-      console.log({ tenant, message, requestId, loggerName });
+      console.log(formatLog({ tenant, message, requestId, loggerName }));
   }
 }
 

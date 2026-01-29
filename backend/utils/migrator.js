@@ -407,9 +407,11 @@ const Migrator = class
           body: {
             name: triggerId,
             script: typeof script === 'string' ? script : JSON.stringify(script),
-            domain: 'app',
+            domain: 'APP',
             groupRef: { id: scriptGroup.id },
-            permissionAggregation: {},
+            permissionAggregation: {
+              operationForAllUsers: 'READ_AND_EDIT',
+            },
           },
         },
       );
