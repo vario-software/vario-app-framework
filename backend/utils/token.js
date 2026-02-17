@@ -100,7 +100,6 @@ async function refreshAppToken()
   const { data } = await app.erp.fetch(`/cmn/apps/${app.client.appIdentifier}/refresh-token`, {
     method: 'POST',
     body: appToken,
-    useInternalApi: true,
     headers: {
       'Content-Type': 'text/plain',
     },

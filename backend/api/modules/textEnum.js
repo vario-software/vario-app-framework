@@ -1,3 +1,5 @@
+const { getApp } = require('#backend/utils/context.js');
+
 const TextEnum = class
 {
   constructor(ApiAdapter)
@@ -62,8 +64,10 @@ const TextEnum = class
 
   createGroup = async function(textEnumGroup)
   {
+    const app = getApp();
+
     const response = await this.ApiAdapter.fetch(
-      '/cmn/masterdata/text-enum-groups',
+      `/community/${app.version}/cmn/masterdata/text-enum-groups`,
       {
         body: JSON.stringify(textEnumGroup),
         method: 'POST',
@@ -114,8 +118,10 @@ const TextEnum = class
 
   removeEnum = async function(textEnum)
   {
+    const app = getApp();
+
     return this.ApiAdapter.fetch(
-      `/cmn/masterdata/text-enums/${textEnum.id}`,
+      `/community/${app.version}/cmn/masterdata/text-enums/${textEnum.id}`,
       {
         method: 'DELETE',
       },
@@ -136,8 +142,10 @@ const TextEnum = class
 
   createEnum = async function(textEnum)
   {
+    const app = getApp();
+
     await this.ApiAdapter.fetch(
-      '/cmn/masterdata/text-enums',
+      `/community/${app.version}/cmn/masterdata/text-enums`,
       {
         body: JSON.stringify(textEnum),
         method: 'POST',

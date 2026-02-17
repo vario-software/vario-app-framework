@@ -47,14 +47,7 @@ class ErpApi extends Api
 
     this.setAuthorization(Authorization);
 
-    if (this.useInternalApi)
-    {
-      this.setBaseUrl(`${baseUrl}/api/vario`);
-    }
-    else
-    {
-      this.setBaseUrl(`${baseUrl}/api/vario/community/${this.app.version}`);
-    }
+    this.setBaseUrl(`${baseUrl}/api/vario`);
   }
 
   async onResponse()

@@ -18,7 +18,6 @@ async function vql({ statement, variableSubstitutions = [], limit = null, offset
   }
 
   const result = await this.fetch('/cmn/computed-queries/execute', {
-    useInternalApi: true,
     method: 'POST',
     body: JSON.stringify(payload),
   });

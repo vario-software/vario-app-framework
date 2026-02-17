@@ -69,7 +69,7 @@ ${identifier ? `AND identifier = '${identifier}'` : ''}
   {
     const app = getApp();
 
-    const { data: response } = await this.ApiAdapter.fetch('/cmn/system/app-migration', {
+    const { data: response } = await this.ApiAdapter.fetch(`/community/${app.version}/cmn/system/app-migration`, {
       body: {
         appIdentifier: app.client.appIdentifier,
         identifier,
@@ -84,7 +84,9 @@ ${identifier ? `AND identifier = '${identifier}'` : ''}
 
   delete = async function(id)
   {
-    const { data: response } = await this.ApiAdapter.fetch(`/cmn/system/app-migration/${id}`, {
+    const app = getApp();
+
+    const { data: response } = await this.ApiAdapter.fetch(`/community/${app.version}/cmn/system/app-migration/${id}`, {
       method: 'delete',
     });
 

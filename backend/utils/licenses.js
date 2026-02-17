@@ -46,9 +46,7 @@ async function getLicenses()
 
   const app = getApp();
 
-  const { data } = await app.erp.fetch('/cmn/systems/licenses/', {
-    useInternalApi: true,
-  });
+  const { data } = await app.erp.fetch('/cmn/systems/licenses/');
 
   return data.map(({ licenseKey }) => licenseKey);
 }

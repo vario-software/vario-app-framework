@@ -160,7 +160,7 @@ const Migrator = class
 
     createSalesChannelBackend: async (label, validChannelTypes) =>
     {
-      const { data: salesChannelBackend } = await this.ApiAdapter.fetch('/erp/sales-channels/backend', {
+      const { data: salesChannelBackend } = await this.ApiAdapter.fetch(`/community/${this.app.version}/erp/sales-channels/backend`, {
         method: 'POST',
         body: JSON.stringify({
           appId: this.app.client.appIdentifier,
@@ -178,7 +178,7 @@ const Migrator = class
 
     changeSalesChannelBackend: async body =>
     {
-      const { data: salesChannelBackend } = await this.ApiAdapter.fetch(`/erp/sales-channels/backend/${body.id}`, {
+      const { data: salesChannelBackend } = await this.ApiAdapter.fetch(`/community/${this.app.version}/erp/sales-channels/backend/${body.id}`, {
         method: 'PUT',
         body: JSON.stringify(body),
       });
@@ -190,7 +190,7 @@ const Migrator = class
 
     createSalesChannel: async (salesChannelBackend, label, description, channelType = 'ECOMMERCE') =>
     {
-      const { data: salesChannel } = await this.ApiAdapter.fetch('/erp/sales-channels', {
+      const { data: salesChannel } = await this.ApiAdapter.fetch(`/community/${this.app.version}/erp/sales-channels`, {
         method: 'POST',
         body: JSON.stringify({
           label,
@@ -238,7 +238,7 @@ const Migrator = class
 
     getSalesChannelBackend: async salesChannelBackendId =>
     {
-      const { data: salesChannelBackend } = await this.ApiAdapter.fetch(`/erp/sales-channels/backend/${salesChannelBackendId}`);
+      const { data: salesChannelBackend } = await this.ApiAdapter.fetch(`/community/${this.app.version}/erp/sales-channels/backend/${salesChannelBackendId}`);
 
       if (salesChannelBackend)
       {
@@ -250,7 +250,7 @@ const Migrator = class
 
     activateSalesChannelBackend: async salesChannelBackend =>
     {
-      await this.ApiAdapter.fetch(`/erp/sales-channels/backend/${salesChannelBackend.id}/activate`, {
+      await this.ApiAdapter.fetch(`/community/${this.app.version}/erp/sales-channels/backend/${salesChannelBackend.id}/activate`, {
         method: 'PUT',
         body: '{}',
       });
@@ -261,7 +261,6 @@ const Migrator = class
       const { data: importMultipartPreset } = await this.ApiAdapter.fetch(
         '/cmn/data-import/runs/multi-part',
         {
-          useInternalApi: true,
           method: 'POST',
           body: JSON.stringify(importMultipartPresetTemplate),
         });
@@ -273,7 +272,7 @@ const Migrator = class
 
     createFinanceBackend: async label =>
     {
-      const { data: finance } = await this.ApiAdapter.fetch('/erp/finance/backend', {
+      const { data: finance } = await this.ApiAdapter.fetch(`/community/${this.app.version}/erp/finance/backend`, {
         method: 'POST',
         body: JSON.stringify({
           label,
@@ -312,12 +311,11 @@ const Migrator = class
         '/cmn/computed-queries/finance-export/backends',
         {
           method: 'POST',
-          useInternalApi: true,
           body,
         },
       );
 
-      const { data: finance } = await this.ApiAdapter.fetch(`/erp/finance/backend/${financeBackend?.data?.[0].id}`, {
+      const { data: finance } = await this.ApiAdapter.fetch(`/community/${this.app.version}/erp/finance/backend/${financeBackend?.data?.[0].id}`, {
         method: 'PUT',
         body: JSON.stringify({
           label,
@@ -337,7 +335,6 @@ const Migrator = class
       const { data: importMultipartPreset } = await this.app.erp.fetch(
         `/cmn/data-import/runs/multi-part/${id}`,
         {
-          useInternalApi: true,
           method: 'PUT',
           body: JSON.stringify(importMultipartPresetTemplate),
         });
@@ -361,7 +358,6 @@ const Migrator = class
       const { data: existingGroups } = await this.ApiAdapter.fetch(
         '/cmn/computed-queries/scripting/script-module-groups',
         {
-          useInternalApi: true,
           method: 'POST',
           body: {
             adhocPreset: {
@@ -391,7 +387,6 @@ const Migrator = class
         const { data: newGroup } = await this.ApiAdapter.fetch(
           '/cmn/scripting/module-groups',
           {
-            useInternalApi: true,
             method: 'POST',
             body: { name: this.app.client.appIdentifier },
           },
@@ -402,7 +397,6 @@ const Migrator = class
       const { data: scriptModule } = await this.ApiAdapter.fetch(
         '/cmn/scripting/modules/presettings',
         {
-          useInternalApi: true,
           method: 'POST',
           body: {
             name: triggerId,
@@ -417,9 +411,8 @@ const Migrator = class
       );
 
       await this.ApiAdapter.fetch(
-        '/community/latest/cmn/system/app-scripting-proxy',
+        `/community/${this.app.version}/cmn/system/app-scripting-proxy`,
         {
-          useInternalApi: true,
           method: 'POST',
           body: {
             appIdentifier: this.app.client.appIdentifier,
@@ -440,9 +433,8 @@ const Migrator = class
       }
 
       const { data: proxy } = await this.ApiAdapter.fetch(
-        `/community/latest/cmn/system/app-scripting-proxy/${id}`,
+        `/community/${this.app.version}/cmn/system/app-scripting-proxy/${id}`,
         {
-          useInternalApi: true,
           method: 'GET',
         },
       );
@@ -459,7 +451,6 @@ const Migrator = class
       const { data: existingScriptModule } = await this.ApiAdapter.fetch(
         `/cmn/scripting/modules/${scriptModuleId}/presettings`,
         {
-          useInternalApi: true,
           method: 'GET',
         },
       );
@@ -467,7 +458,6 @@ const Migrator = class
       await this.ApiAdapter.fetch(
         `/cmn/scripting/modules/${scriptModuleId}/presettings`,
         {
-          useInternalApi: true,
           method: 'PUT',
           body: {
             ...existingScriptModule,

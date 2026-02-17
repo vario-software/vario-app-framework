@@ -19,7 +19,6 @@ const PermittedToken = class
       }),
       secret: true,
       secretsToMask: ['bearerToken'],
-      useInternalApi: true,
     });
 
     return data;

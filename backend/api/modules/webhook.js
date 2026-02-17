@@ -14,7 +14,7 @@ const Webhook = class
 
     const app = getApp();
 
-    await this.ApiAdapter.fetch('/cmn/system/app-message-webhook/register', {
+    await this.ApiAdapter.fetch(`/community/${app.version}/cmn/system/app-message-webhook/register`, {
       method: 'POST',
       body: JSON.stringify({
         url: `${apiUrl}${url}`,
@@ -31,7 +31,7 @@ const Webhook = class
 
     const app = getApp();
 
-    await this.ApiAdapter.fetch('/cmn/system/app-message-webhook/deregister', {
+    await this.ApiAdapter.fetch(`/community/${app.version}/cmn/system/app-message-webhook/deregister`, {
       method: 'POST',
       body: JSON.stringify({
         url: `${apiUrl}${url}`,

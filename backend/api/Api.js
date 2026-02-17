@@ -26,7 +26,6 @@ class Api
     formData,
     outputStream,
     headers,
-    useInternalApi,
     secret,
     ...restOptions
   } = {})
@@ -37,7 +36,6 @@ class Api
     this.timeout = timeout;
     this.timer = performance.now();
     this.outputStream = outputStream;
-    this.useInternalApi = useInternalApi;
     this.secret = secret;
     this.restOptions = restOptions;
     this.suppressLogs = suppressLogs;
