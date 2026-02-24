@@ -2,7 +2,7 @@
   --v-primary: #2e2e2e;
   --v-secondary: #84b933;
   --v-secondary-light: #96cc44;
-  --v-accent: #ab2e68;
+  --v-accent: #8c2953;
   --v-positive: #84b933;
   --v-negative: #cd4837;
   --v-info: #11518c;
@@ -10,4 +10,7 @@
   --v-dark: #1d1d1d;
   --v-dark-page: #121212;
   --v-border-radius: 4px;
+  --v-border-radius-card: 16px;
+  --v-border-radius-button: 20px;
+  --v-border-radius-input: 12px;
 }

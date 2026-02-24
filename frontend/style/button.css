@@ -3,7 +3,7 @@
   align-items: center;
   position: relative;
   border: 1px solid lightgrey;
-  border-radius: var(--v-border-radius);
+  border-radius: var(--v-border-radius-button);
   outline: 0;
   font-weight: 500;
   padding: 0.2857em 1.1429em; /* 4px 16px */

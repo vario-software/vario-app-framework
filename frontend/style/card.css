@@ -1,6 +1,6 @@
 .v-card {
   box-shadow: 0 0 0.2857em rgb(0 0 0 / 20%) !important; /* 0 0 4px */
-  border-radius: var(--v-border-radius);
+  border-radius: var(--v-border-radius-card);
   overflow: hidden;
   background-color: white;
 }
@@ -13,7 +13,7 @@
 
 .v-card > .v-head > .v-title {
   color: var(--v-primary);
-  border-radius: var(--v-border-radius) 0 var(--v-border-radius) 0;
+  border-radius: var(--v-border-radius-card) 0 var(--v-border-radius-card) 0;
   padding: 0.375em 1.125em; /* 6px 18px */
   background-color: #e0e0e0;
   text-overflow: ellipsis;
