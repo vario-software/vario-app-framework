@@ -120,11 +120,13 @@ function validateClient(client)
     throw new Error(`client config is missing: ${missingProps.join()}`);
   }
 
-  try
+  if (typeof client.appJWK === 'string')
   {
-    JSON.parse(client.appJWK);
+    try { client.appJWK = JSON.parse(client.appJWK); }
+    catch { /* handled below */ }
   }
-  catch
+
+  if (typeof client.appJWK !== 'object' || client.appJWK === null)
   {
     throw new Error('appJWK is not a valid JSON');
   }
