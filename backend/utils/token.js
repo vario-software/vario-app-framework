@@ -51,7 +51,7 @@ function validateAppToken(appToken)
 
     const { appIdentifier, appJWK } = app.client;
 
-    const jwk = JSON.parse(appJWK).keys[0];
+    const jwk = appJWK.keys[0];
 
     importJWK(jwk, 'ES256')
       .then(key =>
