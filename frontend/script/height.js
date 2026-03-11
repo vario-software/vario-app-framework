@@ -26,6 +26,8 @@ const initHeightTransfer = () =>
     childList: true,
     subtree: true,
   });
+
+  new ResizeObserver(transferHeight).observe(document.body);
 };
 
 export { initHeightTransfer };

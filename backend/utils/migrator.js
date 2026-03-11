@@ -330,6 +330,16 @@ const Migrator = class
       return finance;
     },
 
+    getMultipartImportPreset: async id =>
+    {
+      const { data: importMultipartPreset } = await this.ApiAdapter.fetch(
+        `/cmn/data-import/runs/multi-part/${id}`,
+        { method: 'GET' },
+      );
+
+      return importMultipartPreset;
+    },
+
     updateMultipartImportPreset: async (id, importMultipartPresetTemplate) =>
     {
       const { data: importMultipartPreset } = await this.app.erp.fetch(
@@ -344,17 +354,8 @@ const Migrator = class
       return importMultipartPreset;
     },
 
-    addAppScriptingTrigger: async (triggerId, script) =>
+    getOrCreateScriptModuleGroup: async () =>
     {
-      const existingProxyId = await this.methods.getAppScriptingTriggerId(triggerId);
-
-      if (existingProxyId)
-      {
-        await this.methods.updateAppScriptingTrigger(triggerId, script, existingProxyId);
-
-        return;
-      }
-
       const { data: existingGroups } = await this.ApiAdapter.fetch(
         '/cmn/computed-queries/scripting/script-module-groups',
         {
@@ -376,23 +377,171 @@ const Migrator = class
         },
       );
 
-      let scriptGroup;
-
-      if (existingGroups?.data && existingGroups.data.length > 0)
+      if (existingGroups?.data?.length > 0)
       {
-        scriptGroup = existingGroups.data[0];
+        return existingGroups.data[0];
+      }
+
+      const { data: newGroup } = await this.ApiAdapter.fetch(
+        '/cmn/scripting/module-groups',
+        {
+          method: 'POST',
+          body: { name: this.app.client.appIdentifier },
+        },
+      );
+
+      await this.methods.log(`Script-Module-Group "${this.app.client.appIdentifier}" created (ID: ${newGroup.id})\n`);
+
+      return newGroup;
+    },
+
+    getOrCreateImportScriptPresetting: async (name, script, existingInlineScript) =>
+    {
+      const scriptGroup = await this.methods.getOrCreateScriptModuleGroup();
+
+      const { data: existingModules } = await this.ApiAdapter.fetch(
+        '/cmn/computed-queries/scripting/script-modules',
+        {
+          method: 'POST',
+          body: {
+            adhocPreset: {
+              queryPredicate: {
+                type: 'JUNCTION',
+                operator: 'AND',
+                children: [
+                  {
+                    type: 'FILTER',
+                    operator: 'EQUALS',
+                    property: 'name',
+                    values: [name],
+                  },
+                  {
+                    type: 'FILTER',
+                    operator: 'EQUALS',
+                    property: 'group.id',
+                    values: [scriptGroup.id],
+                  },
+                ],
+              },
+              results: [
+                { property: 'id' },
+                { property: 'name' },
+              ],
+            },
+          },
+        },
+      );
+
+      const scriptContent = typeof script === 'string' ? script : JSON.stringify(script);
+      let scriptModuleRef;
+
+      if (existingModules?.data?.length > 0)
+      {
+        const moduleId = existingModules.data[0].id;
+
+        const { data: existingPresetting } = await this.ApiAdapter.fetch(
+          `/cmn/scripting/modules/${moduleId}/presettings`,
+          { method: 'GET' },
+        );
+
+        await this.ApiAdapter.fetch(
+          `/cmn/scripting/modules/${moduleId}/presettings`,
+          {
+            method: 'PUT',
+            body: {
+              ...existingPresetting,
+              script: scriptContent,
+            },
+          },
+        );
+
+        await this.methods.log(`Script-Module-Presetting "${name}" updated (ID: ${moduleId})\n`);
+
+        scriptModuleRef = { id: moduleId };
       }
       else
       {
-        const { data: newGroup } = await this.ApiAdapter.fetch(
-          '/cmn/scripting/module-groups',
+        const { data: scriptModule } = await this.ApiAdapter.fetch(
+          '/cmn/scripting/modules/presettings',
           {
             method: 'POST',
-            body: { name: this.app.client.appIdentifier },
+            body: {
+              name,
+              script: scriptContent,
+              domain: 'IMPORT_BATCH_PROCESSING',
+              groupRef: { id: scriptGroup.id },
+              permissionAggregation: {
+                operationForAllUsers: 'READ_AND_EDIT',
+              },
+            },
           },
         );
-        scriptGroup = newGroup;
+
+        await this.methods.log(`Script-Module-Presetting "${name}" created (ID: ${scriptModule.id})\n`);
+
+        scriptModuleRef = { id: scriptModule.id };
+
+        // Migrate existing inline script as user script on the new module
+        if (existingInlineScript)
+        {
+          const inlineScriptContent = typeof existingInlineScript === 'string'
+            ? existingInlineScript
+            : JSON.stringify(existingInlineScript);
+
+          const { data: createdModule } = await this.ApiAdapter.fetch(
+            `/cmn/scripting/modules/${scriptModule.id}`,
+            { method: 'GET' },
+          );
+
+          await this.ApiAdapter.fetch(
+            `/cmn/scripting/modules/${scriptModule.id}`,
+            {
+              method: 'PUT',
+              body: {
+                ...createdModule,
+                script: inlineScriptContent,
+              },
+            },
+          );
+
+          await this.methods.log(`Migrated existing inline script for "${name}" to script module\n`);
+        }
       }
+
+      const existingProxyId = await this.methods.getAppScriptingTriggerId(name);
+
+      if (!existingProxyId)
+      {
+        await this.ApiAdapter.fetch(
+          `/community/${this.app.version}/cmn/system/app-scripting-proxy`,
+          {
+            method: 'POST',
+            body: {
+              appIdentifier: this.app.client.appIdentifier,
+              triggerId: name,
+              scriptModuleRef,
+            },
+          },
+        );
+
+        await this.methods.log(`App-Script-Proxy for "${name}" successfully created\n`);
+      }
+
+      return scriptModuleRef;
+    },
+
+    addAppScriptingTrigger: async (triggerId, script) =>
+    {
+      const existingProxyId = await this.methods.getAppScriptingTriggerId(triggerId);
+
+      if (existingProxyId)
+      {
+        await this.methods.updateAppScriptingTrigger(triggerId, script, existingProxyId);
+
+        return;
+      }
+
+      const scriptGroup = await this.methods.getOrCreateScriptModuleGroup();
 
       const { data: scriptModule } = await this.ApiAdapter.fetch(
         '/cmn/scripting/modules/presettings',
