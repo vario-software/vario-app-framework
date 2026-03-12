@@ -340,6 +340,16 @@ const Migrator = class
       return importMultipartPreset;
     },
 
+    getImportMappingRuleSet: async id =>
+    {
+      const { data: importMappingRuleSet } = await this.ApiAdapter.fetch(
+        `/cmn/data-import/rule-sets/${id}`,
+        { method: 'GET' },
+      );
+
+      return importMappingRuleSet;
+    },
+
     updateMultipartImportPreset: async (id, importMultipartPresetTemplate) =>
     {
       const { data: importMultipartPreset } = await this.app.erp.fetch(
