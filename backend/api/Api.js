@@ -8,6 +8,7 @@ const redirectRequestFn = require('#backend/api/helpers/redirectRequest.js');
 const vqlFn = require('#backend/api/helpers/vql.js');
 const { getApp } = require('#backend/utils/context.js');
 const HttpError = require('#backend/utils/httpError.js');
+const { URLSearchParams } = require('url');
 
 class Api
 {
@@ -20,6 +21,7 @@ class Api
     timeout = 15 * 60 * 1000,
     suppressLogs = false,
     secretsToMask = ['value'],
+    pathParams = {},
     followRedirects,
     body,
     inputStream,
@@ -27,6 +29,7 @@ class Api
     outputStream,
     headers,
     secret,
+    query,
     ...restOptions
   } = {})
   {
@@ -41,6 +44,8 @@ class Api
     this.suppressLogs = suppressLogs;
     this.followRedirects = followRedirects;
     this.secretsToMask = secretsToMask;
+    this.pathParams = pathParams;
+    this.query = query;
 
     this.app = getApp();
 
@@ -65,7 +70,19 @@ class Api
 
   get fullPath()
   {
-    return this.baseUrl + this.path;
+    return this.baseUrl + expandUrl(this.path, this.pathParams) + this.queryString;
+  }
+
+  get queryString()
+  {
+    const parsedQuery = new URLSearchParams(this.query);
+
+    if(parsedQuery.size > 0)
+    {
+      return '?' + parsedQuery.toString();
+    }
+
+    return '';
   }
 
   get serviceName()
@@ -85,7 +102,17 @@ class Api
 
   setPath(path)
   {
-    this.path = path;
+    const splitPath = path?.split('?')
+
+    if(splitPath[0])
+    {
+      this.path = splitPath[0];
+    }
+
+    if(splitPath[1])
+    {
+      this.setQuery(Object.fromEntries(new URLSearchParams(splitPath[1]).entries()));
+    }
 
     return this;
   }
@@ -93,6 +120,16 @@ class Api
   setBaseUrl(baseUrl)
   {
     this.baseUrl = baseUrl;
+
+    return this;
+  }
+
+  setQuery(query)
+  {
+    this.query = {
+      ...this.query,
+      ...query,
+    };
 
     return this;
   }
@@ -448,4 +485,17 @@ function maskSpecificKey(response, secretsToMask = ['value'], mask = '[secret]')
 
     return acc;
   }, {});
+}
+
+function expandUrl(template, params)
+{
+  return template.replace(/:([a-zA-Z_]\w*)/g, (match, key) =>
+  {
+    if (!(key in params))
+    {
+      throw new Error(`Missing parameter "${key}" for template "${template}"`);
+    }
+    
+    return encodeURIComponent(params[key]);
+  });
 }
