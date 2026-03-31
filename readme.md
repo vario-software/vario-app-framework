@@ -4,6 +4,8 @@ The VARIO App Framework makes it easy and quick to set up a VARIO Cloud App in N
 
 See the [VARIO App Demo](https://github.com/vario-software/vario-app-demo) built with this framework.
 
-For more information about VARIO and our ERP system, visit [www.vario.ag](https://www.vario.ag).
+For more information about VARIO and our ERP system, visit [www.vario.ag](https://www.vario.ag). For developer resources, see our [Developer Documentation](https://developer.vario-software.de/).
 
-Documentation and setup guides are coming soon.
+```bash
+npm install @vario-software/vario-app-framework
+```
