@@ -28,6 +28,7 @@ const VarioCloudApp = class
     this.port = '8080';
     this.uiPath = null;
     this.uiPrefix = '/ui';
+    this.serverListening = false;
 
     this.version = 'latest';
 
@@ -98,6 +99,8 @@ const VarioCloudApp = class
           reject(error);
           return;
         }
+
+        this.serverListening = true;
 
         resolve(this);
       });
