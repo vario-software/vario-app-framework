@@ -1,0 +1,164 @@
+/* Grid container */
+.v-row {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+  align-items: flex-start;
+
+  --gap: 1.143em;
+  --col-gap: var(--gap);
+  --row-gap: var(--gap);
+
+  column-gap: var(--col-gap);
+  row-gap: var(--row-gap);
+}
+
+.v-row-xs { --gap: 0.286em; }
+.v-row-sm { --gap: 0.572em; }
+.v-row-md { --gap: 1.143em; }
+.v-row-lg { --gap: 1.715em; }
+.v-row-xl { --gap: 3.5em; }
+
+.v-row-y-xs { --col-gap: 0.286em; }
+.v-row-y-sm { --col-gap: 0.572em; }
+.v-row-y-md { --col-gap: 1.143em; }
+.v-row-y-lg { --col-gap: 1.715em; }
+.v-row-y-xl { --col-gap: 3.5em; }
+
+.v-row-x-xs { --row-gap: 0.286em; }
+.v-row-x-sm { --row-gap: 0.572em; }
+.v-row-x-md { --row-gap: 1.143em; }
+.v-row-x-lg { --row-gap: 1.715em; }
+.v-row-x-xl { --row-gap: 3.5em; }
+
+.v-col-1, .v-col-2, .v-col-3, .v-col-4,
+.v-col-5, .v-col-6, .v-col-7, .v-col-8,
+.v-col-9, .v-col-10, .v-col-11, .v-col-12,
+[class*="v-col-xs-"], [class*="v-col-sm-"],
+[class*="v-col-md-"], [class*="v-col-lg-"],
+[class*="v-col-xl-"] {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  flex: 0 0 calc(var(--col) * (100% + var(--col-gap)) - var(--col-gap));
+  max-width: calc(var(--col) * (100% + var(--col-gap)) - var(--col-gap));
+  align-items: stretch;
+}
+
+.v-col-content-natural{
+  align-items: flex-start;
+}
+
+.v-col-1  { --col: 1/12; }
+.v-col-2  { --col: 2/12; }
+.v-col-3  { --col: 3/12; }
+.v-col-4  { --col: 4/12; }
+.v-col-5  { --col: 5/12; }
+.v-col-6  { --col: 6/12; }
+.v-col-7  { --col: 7/12; }
+.v-col-8  { --col: 8/12; }
+.v-col-9  { --col: 9/12; }
+.v-col-10 { --col: 10/12; }
+.v-col-11 { --col: 11/12; }
+.v-col-12 { --col: 1;     }
+
+/* xs breakpoint (0px+) — same as base, for explicit mobile-first usage */
+.v-col-xs-1  { --col: 1/12; }
+.v-col-xs-2  { --col: 2/12; }
+.v-col-xs-3  { --col: 3/12; }
+.v-col-xs-4  { --col: 4/12; }
+.v-col-xs-5  { --col: 5/12; }
+.v-col-xs-6  { --col: 6/12; }
+.v-col-xs-7  { --col: 7/12; }
+.v-col-xs-8  { --col: 8/12; }
+.v-col-xs-9  { --col: 9/12; }
+.v-col-xs-10 { --col: 10/12; }
+.v-col-xs-11 { --col: 11/12; }
+.v-col-xs-12 { --col: 1;     }
+
+/* sm breakpoint (600px+) */
+@media (min-width: 600px) {
+  .v-col-sm-1  { --col: 1/12; }
+  .v-col-sm-2  { --col: 2/12; }
+  .v-col-sm-3  { --col: 3/12; }
+  .v-col-sm-4  { --col: 4/12; }
+  .v-col-sm-5  { --col: 5/12; }
+  .v-col-sm-6  { --col: 6/12; }
+  .v-col-sm-7  { --col: 7/12; }
+  .v-col-sm-8  { --col: 8/12; }
+  .v-col-sm-9  { --col: 9/12; }
+  .v-col-sm-10 { --col: 10/12; }
+  .v-col-sm-11 { --col: 11/12; }
+  .v-col-sm-12 { --col: 1;     }
+}
+
+/* md breakpoint (1024px+) */
+@media (min-width: 1024px) {
+  .v-col-md-1  { --col: 1/12; }
+  .v-col-md-2  { --col: 2/12; }
+  .v-col-md-3  { --col: 3/12; }
+  .v-col-md-4  { --col: 4/12; }
+  .v-col-md-5  { --col: 5/12; }
+  .v-col-md-6  { --col: 6/12; }
+  .v-col-md-7  { --col: 7/12; }
+  .v-col-md-8  { --col: 8/12; }
+  .v-col-md-9  { --col: 9/12; }
+  .v-col-md-10 { --col: 10/12; }
+  .v-col-md-11 { --col: 11/12; }
+  .v-col-md-12 { --col: 1;     }
+}
+
+/* lg breakpoint (1440px+) */
+@media (min-width: 1440px) {
+  .v-col-lg-1  { --col: 1/12; }
+  .v-col-lg-2  { --col: 2/12; }
+  .v-col-lg-3  { --col: 3/12; }
+  .v-col-lg-4  { --col: 4/12; }
+  .v-col-lg-5  { --col: 5/12; }
+  .v-col-lg-6  { --col: 6/12; }
+  .v-col-lg-7  { --col: 7/12; }
+  .v-col-lg-8  { --col: 8/12; }
+  .v-col-lg-9  { --col: 9/12; }
+  .v-col-lg-10 { --col: 10/12; }
+  .v-col-lg-11 { --col: 11/12; }
+  .v-col-lg-12 { --col: 1;     }
+}
+
+/* xl breakpoint (1920px+) */
+@media (min-width: 1920px) {
+  .v-col-xl-1  { --col: 1/12; }
+  .v-col-xl-2  { --col: 2/12; }
+  .v-col-xl-3  { --col: 3/12; }
+  .v-col-xl-4  { --col: 4/12; }
+  .v-col-xl-5  { --col: 5/12; }
+  .v-col-xl-6  { --col: 6/12; }
+  .v-col-xl-7  { --col: 7/12; }
+  .v-col-xl-8  { --col: 8/12; }
+  .v-col-xl-9  { --col: 9/12; }
+  .v-col-xl-10 { --col: 10/12; }
+  .v-col-xl-11 { --col: 11/12; }
+  .v-col-xl-12 { --col: 1;     }
+}
+
+.v-col-shrink {
+  display: flex;
+  flex-direction: column;
+  gap: var(--row-gap);
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.v-col-grow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--row-gap);
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.v-col-vertical-center {
+  align-self: center;
+}
