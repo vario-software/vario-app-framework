@@ -158,6 +158,26 @@ const Migrator = class
       await this.methods.log(`Webhook for destination "${destinationQueue}" deregistered\n`);
     },
 
+    isWebhookRegistered: async (destinationQueue, url) => this.ApiAdapter.webhook.isRegistered(destinationQueue, url),
+
+    registerWebhookIfNotExists: async (destinationQueue, url) =>
+    {
+      const isRegistered = await this.ApiAdapter.webhook.isRegistered(destinationQueue, url);
+
+      if (isRegistered)
+      {
+        await this.methods.log(`Webhook for destination "${destinationQueue}" already registered, skipping\n`);
+
+        return false;
+      }
+
+      await this.ApiAdapter.webhook.register(destinationQueue, url);
+
+      await this.methods.log(`Webhook for destination "${destinationQueue}" registered\n`);
+
+      return true;
+    },
+
     createSalesChannelBackend: async (label, validChannelTypes) =>
     {
       const { data: salesChannelBackend } = await this.ApiAdapter.fetch(`/community/${this.app.version}/erp/sales-channels/backend`, {

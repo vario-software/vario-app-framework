@@ -41,6 +41,33 @@ const Webhook = class
       }),
     });
   };
+
+  getRegistered = async function()
+  {
+    const app = getApp();
+
+    const { data } = await this.ApiAdapter.vql({
+      statement: `
+        SELECT destinationQueue, url
+          FROM system.queryAppMessageWebhook
+         WHERE appIdentifier = '${app.client.appIdentifier}'
+      `,
+    });
+
+    return data || [];
+  };
+
+  isRegistered = async function(destinationQueue, url)
+  {
+    const apiUrl = `${process.env.WEBHOOK_HOST ?? `https://${getRequest().get('host')}`}`;
+    const fullUrl = `${apiUrl}${url}`;
+
+    const registeredWebhooks = await this.getRegistered();
+
+    return registeredWebhooks.some(
+      webhook => webhook.destinationQueue === destinationQueue && webhook.url === fullUrl,
+    );
+  };
 };
 
 module.exports = Webhook;
