@@ -1,4 +1,5 @@
 const { getApp, getContext, getRequest } = require('#backend/utils/context.js');
+const { checkLicense } = require('#backend/utils/licenses.js');
 const ErpApi = require('#backend/api/ErpApi.js');
 
 const Migrator = class
@@ -510,32 +511,6 @@ const Migrator = class
         await this.methods.log(`Script-Module-Presetting "${name}" created (ID: ${scriptModule.id})\n`);
 
         scriptModuleRef = { id: scriptModule.id };
-
-        // Migrate existing inline script as user script on the new module
-        if (existingInlineScript)
-        {
-          const inlineScriptContent = typeof existingInlineScript === 'string'
-            ? existingInlineScript
-            : JSON.stringify(existingInlineScript);
-
-          const { data: createdModule } = await this.ApiAdapter.fetch(
-            `/cmn/scripting/modules/${scriptModule.id}`,
-            { method: 'GET' },
-          );
-
-          await this.ApiAdapter.fetch(
-            `/cmn/scripting/modules/${scriptModule.id}`,
-            {
-              method: 'PUT',
-              body: {
-                ...createdModule,
-                script: inlineScriptContent,
-              },
-            },
-          );
-
-          await this.methods.log(`Migrated existing inline script for "${name}" to script module\n`);
-        }
       }
 
       const existingProxyId = await this.methods.getAppScriptingTriggerId(name);
@@ -555,6 +530,34 @@ const Migrator = class
         );
 
         await this.methods.log(`App-Script-Proxy for "${name}" successfully created\n`);
+      }
+
+      if (existingInlineScript && await checkLicense('scripting_license', true))
+      {
+        const { data: currentModule } = await this.ApiAdapter.fetch(
+          `/cmn/scripting/modules/${scriptModuleRef.id}`,
+          { method: 'GET' },
+        );
+
+        if (currentModule.sameAsPresettingScript)
+        {
+          const inlineScriptContent = typeof existingInlineScript === 'string'
+            ? existingInlineScript
+            : JSON.stringify(existingInlineScript);
+
+          await this.ApiAdapter.fetch(
+            `/cmn/scripting/modules/${scriptModuleRef.id}`,
+            {
+              method: 'PUT',
+              body: {
+                ...currentModule,
+                script: inlineScriptContent,
+              },
+            },
+          );
+
+          await this.methods.log(`Migrated existing inline script for "${name}" to script module\n`);
+        }
       }
 
       return scriptModuleRef;

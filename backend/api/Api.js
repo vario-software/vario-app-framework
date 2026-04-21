@@ -206,7 +206,7 @@ class Api
         request: {
           requestUrl: this.fullPath,
           requestOptions: this.requestOptions,
-          body: this.body,
+          body: this.secret ? maskSpecificKey(this.body, this.secretsToMask) : this.body,
         },
         response: this.secret ? maskSpecificKey(response, this.secretsToMask) : response,
         duration: `${(performance.now() - this.timer).toFixed(2)}ms`,
@@ -262,7 +262,7 @@ class Api
 
   async onError(error)
   {
-    const maskedBody = this.suppressLogs ? '[secret]' : this.body;
+    const maskedBody = this.suppressLogs ? '[secret]' : (this.secret ? maskSpecificKey(this.body, this.secretsToMask) : this.body);
 
     const message = {
       request: {
@@ -489,7 +489,7 @@ function maskSpecificKey(response, secretsToMask = ['value'], mask = '[secret]')
 
 function expandUrl(template, params)
 {
-  return template.replace(/:([a-zA-Z_]\w*)/g, (match, key) =>
+  return template.replace(/:([a-zA-Z_-]+)/g, (match, key) =>
   {
     if (!(key in params))
     {

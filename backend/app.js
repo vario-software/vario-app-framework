@@ -92,7 +92,7 @@ const VarioCloudApp = class
 
     return new Promise((resolve, reject) =>
     {
-      this.express.listen(this.port, error =>
+      this.httpServer = this.express.listen(this.port, error =>
       {
         if (error)
         {
@@ -101,6 +101,11 @@ const VarioCloudApp = class
         }
 
         this.serverListening = true;
+
+        if (typeof this.onServerStarted === 'function')
+        {
+          this.onServerStarted(this.httpServer);
+        }
 
         resolve(this);
       });
@@ -125,8 +130,12 @@ function validateClient(client)
 
   if (typeof client.appJWK === 'string')
   {
-    try { client.appJWK = JSON.parse(client.appJWK); }
-    catch { /* handled below */ }
+    try
+    {
+      client.appJWK = JSON.parse(client.appJWK);
+    }
+    catch
+    { /* handled below */ }
   }
 
   if (typeof client.appJWK !== 'object' || client.appJWK === null)
