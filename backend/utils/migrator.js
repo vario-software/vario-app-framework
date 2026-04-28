@@ -351,6 +351,34 @@ const Migrator = class
       return finance;
     },
 
+    createBankBackend: async (label, backendType = 'APP') =>
+    {
+      const { data: bankBackend } = await this.ApiAdapter.fetch('/erp/bank/backend', {
+        method: 'POST',
+        body: JSON.stringify({
+          label,
+          appId: this.app.client.appIdentifier,
+          backendType,
+        }),
+      });
+
+      await this.methods.log(`Bank Backend with id "${bankBackend.id}" successfully created\n`);
+
+      return bankBackend;
+    },
+
+    changeBankBackend: async (id, body) =>
+    {
+      const { data: bankBackend } = await this.ApiAdapter.fetch(`/erp/bank/backend/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      });
+
+      await this.methods.log(`Bank Backend with id "${bankBackend.id}" successfully updated\n`);
+
+      return bankBackend;
+    },
+
     getMultipartImportPreset: async id =>
     {
       const { data: importMultipartPreset } = await this.ApiAdapter.fetch(
