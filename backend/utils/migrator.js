@@ -653,7 +653,7 @@ const Migrator = class
 
       if (!scriptModuleId)
       {
-        await this.methods.log(`App-Script-Trigger with id "${triggerId}" has no scriptModuleRef\n`, 'ERROR');
+        await this.methods.log(`App-Script-Trigger with id "${triggerId}" has no scriptModuleRef\n`, 'WARNING');
 
         return;
       }

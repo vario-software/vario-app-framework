@@ -10,6 +10,7 @@ async function gateway(path, options = {})
 
   apiRequest.onResponse = () =>
   {
+    res.status(apiRequest.getStatusCode());
     res.set(apiRequest.getResponseHeaders());
   };
 
