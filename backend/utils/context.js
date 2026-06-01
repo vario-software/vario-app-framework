@@ -33,6 +33,13 @@ function getTenant()
   return tenant;
 }
 
+function getAppDomain()
+{
+  const appDomain = getAccessToken()?.appDomain;
+
+  return appDomain;
+}
+
 function getExternalUserId()
 {
   const externalUserId = getAccessToken()?.sub;
@@ -72,6 +79,7 @@ module.exports = {
   getContext,
   getAppToken,
   getAccessToken,
+  getAppDomain,
   getTenant,
   getExternalUserId,
   getRequest,

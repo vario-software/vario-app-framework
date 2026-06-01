@@ -1,4 +1,4 @@
-async function vql({ statement, variableSubstitutions = [], limit = null, offset = null })
+async function vql({ statement, variableSubstitutions = [], limit = null, offset = null, mapDisplayNames = true })
 {
   const payload = {
     statement,
@@ -24,7 +24,9 @@ async function vql({ statement, variableSubstitutions = [], limit = null, offset
 
   return {
     ...result.data,
-    data: mapDisplayName(result.data.definition, result.data.data),
+    data: mapDisplayNames
+      ? mapDisplayName(result.data.definition, result.data.data)
+      : result.data.data,
     moreElements: result.response.headers['x-query-more-elements'],
     nextOffset: result.response.headers['x-query-next-offset'],
   };

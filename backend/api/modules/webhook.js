@@ -1,4 +1,4 @@
-const { getRequest } = require('#backend/utils/context.js');
+const { getAppDomain } = require('#backend/utils/context.js');
 const { getApp } = require('#backend/utils/context.js');
 
 const Webhook = class
@@ -10,7 +10,7 @@ const Webhook = class
 
   register = async function(destinationQueue, url, destinationOwner)
   {
-    const apiUrl = `${process.env.WEBHOOK_HOST ?? `https://${getRequest().get('host')}`}`;
+    const apiUrl = `${process.env.WEBHOOK_HOST ?? `https://${getAppDomain()}`}`;
 
     const app = getApp();
 
@@ -27,7 +27,7 @@ const Webhook = class
 
   deregister = async function(destinationQueue, url, destinationOwner)
   {
-    const apiUrl = `${process.env.WEBHOOK_HOST ?? `https://${getRequest().get('host')}`}`;
+    const apiUrl = `${process.env.WEBHOOK_HOST ?? `https://${getAppDomain()}`}`;
 
     const app = getApp();
 
@@ -59,7 +59,7 @@ const Webhook = class
 
   isRegistered = async function(destinationQueue, url)
   {
-    const apiUrl = `${process.env.WEBHOOK_HOST ?? `https://${getRequest().get('host')}`}`;
+    const apiUrl = `${process.env.WEBHOOK_HOST ?? `https://${getAppDomain()}`}`;
     const fullUrl = `${apiUrl}${url}`;
 
     const registeredWebhooks = await this.getRegistered();

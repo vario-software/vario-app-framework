@@ -211,21 +211,35 @@ const Migrator = class
 
     createSalesChannel: async (salesChannelBackend, label, description, channelType = 'ECOMMERCE') =>
     {
-      const { data: salesChannel } = await this.ApiAdapter.fetch(`/community/${this.app.version}/erp/sales-channels`, {
-        method: 'POST',
-        body: JSON.stringify({
-          label,
-          description,
-          active: true,
-          channelType,
-          channelBackend: { id: salesChannelBackend.id },
-          externalRef: '',
-        }),
-      });
+      try
+      {
+        const { data: salesChannel } = await this.ApiAdapter.fetch(`/community/${this.app.version}/erp/sales-channels`, {
+          method: 'POST',
+          body: JSON.stringify({
+            label,
+            description,
+            active: true,
+            channelType,
+            channelBackend: { id: salesChannelBackend.id },
+            externalRef: '',
+          }),
+        });
 
-      await this.methods.log(`Sales-Channel with id "${salesChannel.id}" successfully created\n`);
+        await this.methods.log(`Sales-Channel with id "${salesChannel.id}" successfully created\n`);
 
-      return salesChannel;
+        return salesChannel;
+      }
+      catch (error)
+      {
+        if (error.statusCode === 402)
+        {
+          await this.methods.log('Missing Sales-Channel license\n', 'WARNING');
+
+          return {};
+        }
+
+        throw error;
+      }
     },
 
     getSalesChannels: async () =>
