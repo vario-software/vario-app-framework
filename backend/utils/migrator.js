@@ -88,7 +88,22 @@ const Migrator = class
 
     getEavGroup: async groupKey =>
     {
-      const eavGroup = await this.ApiAdapter.eav.getGroup(groupKey);
+      let eavGroup;
+
+      try
+      {
+        eavGroup = await this.ApiAdapter.eav.getGroup(groupKey);
+      }
+      catch (error)
+      {
+        const message = error.statusCode === 404
+          ? `EAV-Group with key "${groupKey}" could not be read because it does not exist (HTTP 404). It must be created by an earlier migration before it can be read or changed.`
+          : `EAV-Group with key "${groupKey}" could not be read (HTTP ${error.statusCode ?? 'unknown'}): ${error.message}`;
+
+        await this.methods.log(message, 'ERROR');
+
+        throw error;
+      }
 
       await this.methods.log(`EAV-Group "${eavGroup.label}" with id "${eavGroup.id}" successfully read\n`);
 
@@ -617,22 +632,87 @@ const Migrator = class
       }
 
       const scriptGroup = await this.methods.getOrCreateScriptModuleGroup();
+      const scriptContent = typeof script === 'string' ? script : JSON.stringify(script);
 
-      const { data: scriptModule } = await this.ApiAdapter.fetch(
-        '/cmn/scripting/modules/presettings',
+      const { data: existingModules } = await this.ApiAdapter.fetch(
+        '/cmn/computed-queries/scripting/script-modules',
         {
           method: 'POST',
           body: {
-            name: triggerId,
-            script: typeof script === 'string' ? script : JSON.stringify(script),
-            domain: 'APP',
-            groupRef: { id: scriptGroup.id },
-            permissionAggregation: {
-              operationForAllUsers: 'READ_AND_EDIT',
+            adhocPreset: {
+              queryPredicate: {
+                type: 'JUNCTION',
+                operator: 'AND',
+                children: [
+                  {
+                    type: 'FILTER',
+                    operator: 'EQUALS',
+                    property: 'name',
+                    values: [triggerId],
+                  },
+                  {
+                    type: 'FILTER',
+                    operator: 'EQUALS',
+                    property: 'group.id',
+                    values: [scriptGroup.id],
+                  },
+                ],
+              },
+              results: [
+                { property: 'id' },
+                { property: 'name' },
+              ],
             },
           },
         },
       );
+
+      let scriptModuleRef;
+
+      if (existingModules?.data?.length > 0)
+      {
+        const moduleId = existingModules.data[0].id;
+
+        const { data: existingPresetting } = await this.ApiAdapter.fetch(
+          `/cmn/scripting/modules/${moduleId}/presettings`,
+          { method: 'GET' },
+        );
+
+        await this.ApiAdapter.fetch(
+          `/cmn/scripting/modules/${moduleId}/presettings`,
+          {
+            method: 'PUT',
+            body: {
+              ...existingPresetting,
+              script: scriptContent,
+            },
+          },
+        );
+
+        await this.methods.log(`Script-Module-Presetting "${triggerId}" already existed, updated (ID: ${moduleId})\n`);
+
+        scriptModuleRef = { id: moduleId };
+      }
+      else
+      {
+        const { data: scriptModule } = await this.ApiAdapter.fetch(
+          '/cmn/scripting/modules/presettings',
+          {
+            method: 'POST',
+            body: {
+              name: triggerId,
+              script: scriptContent,
+              domain: 'APP',
+              groupRef: { id: scriptGroup.id },
+              permissionAggregation: {
+                operationForAllUsers: 'READ_AND_EDIT',
+              },
+            },
+          },
+        );
+
+        scriptModuleRef = { id: scriptModule.id };
+      }
 
       await this.ApiAdapter.fetch(
         `/community/${this.app.version}/cmn/system/app-scripting-proxy`,
@@ -641,7 +721,7 @@ const Migrator = class
           body: {
             appIdentifier: this.app.client.appIdentifier,
             triggerId,
-            scriptModuleRef: { id: scriptModule.id },
+            scriptModuleRef,
           },
         },
       );
