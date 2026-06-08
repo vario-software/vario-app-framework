@@ -346,10 +346,10 @@ const Migrator = class
             children: [
               {
                 type: 'FILTER',
-                property: 'label',
+                property: 'appId',
                 operator: 'EQUALS',
                 values: [
-                  label,
+                  this.app.client.appIdentifier,
                 ],
               },
             ],
@@ -365,17 +365,28 @@ const Migrator = class
         },
       );
 
-      const { data: finance } = await this.ApiAdapter.fetch(`/community/${this.app.version}/erp/finance/backend/${financeBackend?.data?.[0].id}`, {
+      const id = financeBackend?.data?.[0]?.id;
+
+      if (!id)
+      {
+        await this.methods.log(`No Finance Backend found for label "${label}"\n`, 'ERROR');
+
+        return null;
+      }
+
+      const { data: existingFinanceBackend } = await this.ApiAdapter.fetch(`/erp/finance/backend/${id}`, {
+        method: 'GET',
+      });
+
+      const { data: finance } = await this.ApiAdapter.fetch(`/erp/finance/backend/${id}`, {
         method: 'PUT',
         body: JSON.stringify({
-          label,
+          ...existingFinanceBackend,
           description,
-          usePerformanceDate: false,
-          appId: this.app.client.appIdentifier,
         }),
       });
 
-      await this.methods.log(`Finance Backend with id "${finance.id}" successfully created\n`);
+      await this.methods.log(`Finance Backend with id "${finance.id}" successfully updated\n`);
 
       return finance;
     },
