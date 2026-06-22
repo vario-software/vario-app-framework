@@ -18,6 +18,13 @@ function streamResponse(res, handler)
     res.write(`${JSON.stringify(data)}\n`);
   };
 
+  // Keep the connection non-idle during long silent phases (e.g. polling for the
+  // ERP import to extract). Reverse proxies/gateways close idle connections with a
+  // 504 after ~60s; a periodic blank line resets that timer. Blank lines are ignored
+  // by the client parsers (they filter out non-JSON / empty lines).
+  const HEARTBEAT_INTERVAL_MS = 15_000;
+  const heartbeat = setInterval(() => res.write('\n'), HEARTBEAT_INTERVAL_MS);
+
   return handler(onProgress)
     .then(result =>
     {
@@ -29,6 +36,7 @@ function streamResponse(res, handler)
     })
     .finally(() =>
     {
+      clearInterval(heartbeat);
       res.end();
     });
 }
