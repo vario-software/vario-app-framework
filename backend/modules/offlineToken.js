@@ -1,3 +1,5 @@
+const HttpError = require('#backend/utils/httpError.js');
+
 class OfflineToken
 {
   constructor(app, filename = 'offlineToken.db')
@@ -15,13 +17,29 @@ class OfflineToken
     this.database = await JSONFilePreset(this.filename, {});
   }
 
+  #assertTenant(tenant)
+  {
+    if (!tenant)
+    {
+      throw new HttpError(
+        'MISSING_TENANT',
+        400,
+        'backend/modules/offlineToken',
+      );
+    }
+  }
+
   async get(tenant)
   {
+    this.#assertTenant(tenant);
+
     return this.database.data[tenant];
   }
 
   async set(tenant, offlineToken)
   {
+    this.#assertTenant(tenant);
+
     this.app.accessToken.delete(tenant);
 
     return this.database.update(tokens =>
@@ -32,6 +50,8 @@ class OfflineToken
 
   async delete(tenant)
   {
+    this.#assertTenant(tenant);
+
     this.app.accessToken.delete(tenant);
 
     return this.database.update(tokens =>

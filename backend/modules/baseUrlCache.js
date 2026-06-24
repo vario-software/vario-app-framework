@@ -1,5 +1,5 @@
-const { getTenant } = require('#backend/utils/context.js');
 const { validateOfflineToken } = require('#backend/utils/token.js');
+const HttpError = require('#backend/utils/httpError.js');
 
 class BaseUrlCache
 {
@@ -15,9 +15,21 @@ class BaseUrlCache
     return Promise.resolve();
   }
 
-  async get()
+  #assertTenant(tenant)
   {
-    const tenant = getTenant();
+    if (!tenant)
+    {
+      throw new HttpError(
+        'MISSING_TENANT',
+        400,
+        'backend/modules/baseUrlCache',
+      );
+    }
+  }
+
+  async get(tenant)
+  {
+    this.#assertTenant(tenant);
 
     if (this.#cache[tenant])
     {
@@ -30,21 +42,21 @@ class BaseUrlCache
     const domain = iss.replace('https://sso.', '').split('/')[0];
     const baseUrl = `https://${tenant}.${domain}`;
 
-    await this.set(baseUrl);
+    await this.set(tenant, baseUrl);
 
     return baseUrl;
   }
 
-  async set(value)
+  async set(tenant, value)
   {
-    const tenant = getTenant();
+    this.#assertTenant(tenant);
 
     this.#cache[tenant] = value;
   }
 
-  async delete()
+  async delete(tenant)
   {
-    const tenant = getTenant();
+    this.#assertTenant(tenant);
 
     delete this.#cache[tenant];
   }

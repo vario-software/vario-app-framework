@@ -9,6 +9,7 @@ const TextEnum = require('#backend/api/modules/textEnum.js');
 const Webhook = require('#backend/api/modules/webhook.js');
 const PermittedToken = require('#backend/api/modules/permittedToken.js');
 const { validateOfflineToken, isAppTokenExpired, refreshAppToken } = require('#backend/utils/token.js');
+const HttpError = require('#backend/utils/httpError.js');
 
 const singletonPromise = new PromiseSingletonMap();
 class ErpApi extends Api
@@ -58,7 +59,10 @@ class ErpApi extends Api
     {
       const tenant = getTenant();
 
-      await this.app.accessToken.delete(tenant);
+      if (tenant)
+      {
+        await this.app.accessToken.delete(tenant);
+      }
     }
   }
 
@@ -66,13 +70,22 @@ class ErpApi extends Api
   {
     const tenant = getTenant();
 
+    if (!tenant)
+    {
+      throw new HttpError(
+        'MISSING_TENANT',
+        400,
+        'backend/api/ErpApi',
+      );
+    }
+
     return singletonPromise.run(tenant, async () =>
     {
       const savedAccessToken = await this.app.accessToken.get(tenant);
 
       if (savedAccessToken)
       {
-        const baseUrl = await this.app.baseUrlCache.get();
+        const baseUrl = await this.app.baseUrlCache.get(tenant);
 
         return {
           baseUrl,
@@ -86,7 +99,7 @@ class ErpApi extends Api
       const domain = iss.replace('https://sso.', '').split('/')[0];
       const baseUrl = `https://${tenant}.${domain}`;
 
-      await this.app.baseUrlCache.set(baseUrl);
+      await this.app.baseUrlCache.set(tenant, baseUrl);
 
       const {
         access_token: accessToken,
@@ -98,7 +111,7 @@ class ErpApi extends Api
 
       const expiresAt = Date.now() + (expiresIn * 0.9) * 1000;
 
-      this.app.accessToken.set(tenant, accessToken, expiresAt);
+      await this.app.accessToken.set(tenant, accessToken, expiresAt);
 
       return {
         baseUrl,

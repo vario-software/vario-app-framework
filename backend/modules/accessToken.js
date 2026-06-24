@@ -1,3 +1,5 @@
+const HttpError = require('#backend/utils/httpError.js');
+
 class AccessToken
 {
   #cache = {};
@@ -9,6 +11,8 @@ class AccessToken
 
   async get(tenant)
   {
+    this.#assertTenant(tenant);
+
     const tokenData = this.#cache[tenant];
 
     if (!tokenData)
@@ -28,6 +32,8 @@ class AccessToken
 
   async set(tenant, accessToken, expiresAt)
   {
+    this.#assertTenant(tenant);
+
     this.#cache[tenant] = {
       accessToken,
       expiresAt,
@@ -36,7 +42,21 @@ class AccessToken
 
   async delete(tenant)
   {
+    this.#assertTenant(tenant);
+
     delete this.#cache[tenant];
+  }
+
+  #assertTenant(tenant)
+  {
+    if (!tenant)
+    {
+      throw new HttpError(
+        'MISSING_TENANT',
+        400,
+        'backend/modules/accessToken',
+      );
+    }
   }
 }
 
