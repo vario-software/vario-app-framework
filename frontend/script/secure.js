@@ -44,6 +44,8 @@ const secureIntegration = () =>
   {
     throw new Error('Application does not run within VARIO-Cloud.');
   }
+
+  sendMain({ ready: true });
 };
 
 const hasPermission = permission => (superUser === 'true') || permissions.split(',').includes(permission);
