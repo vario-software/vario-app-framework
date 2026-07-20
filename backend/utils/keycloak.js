@@ -1,4 +1,5 @@
 const VarioApi = require('#backend/api/Api.js');
+const HttpError = require('#backend/utils/httpError.js');
 const { getApp } = require('#backend/utils/context.js');
 
 async function refreshAccessToken(offlineToken, refreshUrl)
@@ -42,6 +43,21 @@ async function refreshAccessToken(offlineToken, refreshUrl)
       if (app.onKeycloakError)
       {
         app.onKeycloakError(error);
+      }
+
+      // invalid_grant on the offline-token refresh means the offline token is no
+      // longer usable (expired, revoked or "Offline user session not found").
+      // Surface a dedicated, actionable code instead of the generic
+      // UNABLE_TO_SEND_REQUEST so the UI and logs clearly point to "reconnect app".
+      if (error?.logInfo?.response?.data?.error === 'invalid_grant')
+      {
+        throw new HttpError(
+          'OFFLINE_TOKEN_INVALID',
+          error.statusCode ?? 401,
+          'utils/keycloak',
+          error.logInfo,
+          error.logId,
+        );
       }
 
       throw error;
