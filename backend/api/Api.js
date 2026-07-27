@@ -264,7 +264,17 @@ class Api
   {
     const maskedBody = this.suppressLogs ? '[secret]' : (this.secret ? maskSpecificKey(this.body, this.secretsToMask) : this.body);
 
+    const statusCode = this.getStatusCode();
+
+    // `UNABLE_TO_SEND_REQUEST` is thrown for two very different situations that
+    // are indistinguishable from the message alone: a genuine transport failure
+    // (socket reset/close, DNS, timeout → no statusCode) and any non-2xx answer
+    // the remote actually returned (statusCode set, body in `error`). Tag the
+    // kind so logs and callers can tell them apart without changing the message.
+    const kind = statusCode ? 'ERROR_RESPONSE' : 'TRANSPORT_ERROR';
+
     const message = {
+      kind,
       request: {
         requestUrl: this.fullPath,
         requestOptions: this.requestOptions,
@@ -279,7 +289,7 @@ class Api
 
     this.reject(new HttpError(
       'UNABLE_TO_SEND_REQUEST',
-      this.getStatusCode(),
+      statusCode,
       this.serviceName,
       {
         request: {
@@ -292,6 +302,13 @@ class Api
         },
       },
       logId,
+      undefined,
+      {
+        kind,
+        statusCode,
+        requestUrl: this.fullPath,
+        responseData: error,
+      },
     ));
   }
 

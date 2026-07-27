@@ -50,7 +50,7 @@ const Migrator = class
     {
       await this.app.onMigrationError(error);
 
-      await this.methods.log(`Migration "${migration}" failed\n\n${error.message}`, 'ERROR', error.message);
+      await this.methods.log(`Migration "${migration}" failed\n\n${formatMigrationError(error)}`, 'ERROR', error.message);
     }
   };
 
@@ -70,7 +70,7 @@ const Migrator = class
     {
       await this.app.onMigrationError(error);
 
-      await this.methods.log(`Migration "${migration}" failed\n\n${error.message}`, 'ERROR', error.message);
+      await this.methods.log(`Migration "${migration}" failed\n\n${formatMigrationError(error)}`, 'ERROR', error.message);
     }
   };
 
@@ -799,5 +799,66 @@ SELECT id
     },
   };
 };
+
+/* Migration failures were logged with `error.message` only. For HTTP errors
+ * that message is the generic `UNABLE_TO_SEND_REQUEST`, so the real cause (the
+ * remote status code and response body) was invisible at ERROR level and only
+ * present on a decoupled DEBUG line. This expands the ERROR line with the status
+ * code, request URL, response body and correlating log id when the error carries
+ * them, while staying a no-op for plain Errors. */
+function formatMigrationError(error)
+{
+  if (!error)
+  {
+    return String(error);
+  }
+
+  const parts = [error.message ?? String(error)];
+
+  if (error.statusCode !== undefined && error.statusCode !== null)
+  {
+    parts.push(`HTTP status: ${error.statusCode}`);
+  }
+
+  if (error.data?.kind)
+  {
+    parts.push(`Kind: ${error.data.kind}`);
+  }
+
+  const requestUrl = error.data?.requestUrl ?? error.logInfo?.request?.requestUrl;
+
+  if (requestUrl)
+  {
+    parts.push(`Request: ${requestUrl}`);
+  }
+
+  const responseData = error.data?.responseData ?? error.logInfo?.response?.data;
+
+  if (responseData !== undefined && responseData !== null && responseData !== '')
+  {
+    let serialized;
+
+    try
+    {
+      serialized = typeof responseData === 'string' ? responseData : JSON.stringify(responseData);
+    }
+    catch
+    {
+      serialized = String(responseData);
+    }
+
+    if (serialized && serialized !== '{}')
+    {
+      parts.push(`Response: ${serialized}`);
+    }
+  }
+
+  if (error.logId)
+  {
+    parts.push(`Log-ID: ${error.logId}`);
+  }
+
+  return parts.join('\n');
+}
 
 module.exports = Migrator;

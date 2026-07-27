@@ -79,7 +79,7 @@ const VarioCloudApp = class
         this.uiServer.use(express.static(this.uiPath));
 
         // For SPA-Routing
-        this.uiServer.get('/*', (req, res) =>
+        this.uiServer.get('/*splat', (req, res) =>
         {
           res.sendFile(path.resolve(this.uiPath, 'index.html'));
         });
