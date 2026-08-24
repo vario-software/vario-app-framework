@@ -1,10 +1,11 @@
 {
   "name": "@vario-software/vario-app-framework-frontend",
-  "version": "2026.32.1",
+  "version": "2026.33.0",
+  "description": "Frontend assets for VARIO Cloud Apps: corporate-design CSS and JavaScript helpers for the iframe integration — postMessage communication, frame height, app token handling and shared settings.",
+  "homepage": "https://developer.vario-software.de/",
+  "bugs": "https://developer.vario-software.de/help-support",
   "repository": "https://github.com/vario-software/vario-app-framework",
   "author": "VARIO Software AG",
-  "homepage": "https://www.vario.ag",
-  "description": "Provides CSS and useful JavaScript utilities for app features and capabilities to make a VARIO Cloud App appear in the corporate design, giving it a consistent look.",
   "license": "MIT",
   "type": "module",
   "publishConfig": {

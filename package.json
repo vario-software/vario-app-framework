@@ -1,10 +1,11 @@
 {
   "name": "@vario-software/vario-app-framework",
-  "version": "2026.32.1",
+  "version": "2026.33.0",
+  "description": "Build VARIO Cloud Apps in Node.js. Installs the framework's backend (authentication, ERP API access, webhooks, migrations) and frontend (corporate-design CSS and iframe integration helpers).",
+  "homepage": "https://developer.vario-software.de/",
+  "bugs": "https://developer.vario-software.de/help-support",
   "repository": "https://github.com/vario-software/vario-app-framework",
   "author": "VARIO Software AG",
-  "homepage": "https://www.vario.ag",
-  "description": "The VARIO App Framework makes it easy and quick to set up a VARIO Cloud App in Node.js by handling API communication, authentication and providing useful built-in utilities.",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -13,11 +14,11 @@
     "frontend",
     "backend"
   ],
-  "scripts": {
-    "postinstall": "npm --prefix backend install && npm --prefix frontend install"
-  },
   "engines": {
     "node": ">= 20.0.0",
     "npm": ">= 10.0.0"
+  },
+  "scripts": {
+    "postinstall": "npm --prefix backend install && npm --prefix frontend install"
   }
 }
