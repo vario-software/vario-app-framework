@@ -1,4 +1,5 @@
 import { superUser, permissions } from './parameters.js';
+import { sendMain } from "./communication.js";
 
 /* We need to ensure that this integration only
    works when running in a "VARIO Cloud" frame.
