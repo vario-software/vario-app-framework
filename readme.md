@@ -27,4 +27,4 @@ See the [VARIO App Demo](https://github.com/vario-software/vario-app-demo) built
 - [Browse the VARIO Cloud Developer Docs](https://developer.vario-software.de/)
 - [Explore all VARIO packages on npm](https://www.npmjs.com/org/vario-software)
 
-For more information about VARIO and our ERP system, visit [www.vario.ag](https://www.vario.ag).
+For more information about VARIO and our ERP system, visit [www.vario-software.de](https://www.vario-software.de).
