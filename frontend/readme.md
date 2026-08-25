@@ -28,3 +28,5 @@ Installing [`@vario-software/vario-app-framework`](https://www.npmjs.com/package
 - [Build your first VARIO Cloud App](https://developer.vario-software.de/documentation/apps/quickstart)
 - [Browse the VARIO Cloud Developer Docs](https://developer.vario-software.de/)
 - [View the source code on GitHub](https://github.com/vario-software/vario-app-framework)
+
+For more information about VARIO and our ERP system, visit [www.vario-software.de](https://www.vario-software.de).
