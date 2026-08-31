@@ -1,6 +1,6 @@
 {
   "name": "@vario-software/vario-app-framework-backend",
-  "version": "2026.33.2",
+  "version": "2026.34.0",
   "description": "Node.js backend for VARIO Cloud Apps: verifies incoming app tokens, obtains access tokens per tenant, and provides ERP REST and VQL clients, webhook registration and installation migrations.",
   "homepage": "https://developer.vario-software.de/",
   "bugs": "https://developer.vario-software.de/help-support",

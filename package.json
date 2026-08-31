@@ -1,6 +1,6 @@
 {
   "name": "@vario-software/vario-app-framework",
-  "version": "2026.33.2",
+  "version": "2026.34.0",
   "description": "Build VARIO Cloud Apps in Node.js. Installs the framework's backend (authentication, ERP API access, webhooks, migrations) and frontend (corporate-design CSS and iframe integration helpers).",
   "homepage": "https://developer.vario-software.de/",
   "bugs": "https://developer.vario-software.de/help-support",
