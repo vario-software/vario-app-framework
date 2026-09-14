@@ -1,5 +1,4 @@
-const { getAppDomain } = require('#backend/utils/context.js');
-const { getApp } = require('#backend/utils/context.js');
+const { getAppDomain, getApp, getRequest } = require('#backend/utils/context.js');
 
 const Webhook = class
 {
@@ -8,16 +7,32 @@ const Webhook = class
     this.ApiAdapter = ApiAdapter;
   }
 
+  resolveWebhookUrl = function(url)
+  {
+    const HAS_PROTOCOL = /^https?:\/\//i;
+
+    if (HAS_PROTOCOL.test(url))
+    {
+      return url;
+    }
+
+    const base = process.env.WEBHOOK_HOST
+      || getAppDomain()
+      || getRequest()?.get('host');
+
+    const { origin } = new URL(HAS_PROTOCOL.test(base) ? base : `https://${base}`);
+
+    return new URL(url, origin).toString();
+  };
+
   register = async function(destinationQueue, url, destinationOwner)
   {
-    const apiUrl = `${process.env.WEBHOOK_HOST ?? `https://${getAppDomain()}`}`;
-
     const app = getApp();
 
     await this.ApiAdapter.fetch(`/community/${app.version}/cmn/system/app-message-webhook/register`, {
       method: 'POST',
       body: JSON.stringify({
-        url: `${apiUrl}${url}`,
+        url: this.resolveWebhookUrl(url),
         destinationOwner,
         destinationQueue,
         appIdentifier: app.client.appIdentifier,
@@ -27,14 +42,12 @@ const Webhook = class
 
   deregister = async function(destinationQueue, url, destinationOwner)
   {
-    const apiUrl = `${process.env.WEBHOOK_HOST ?? `https://${getAppDomain()}`}`;
-
     const app = getApp();
 
     await this.ApiAdapter.fetch(`/community/${app.version}/cmn/system/app-message-webhook/deregister`, {
       method: 'POST',
       body: JSON.stringify({
-        url: `${apiUrl}${url}`,
+        url: this.resolveWebhookUrl(url),
         destinationOwner,
         destinationQueue,
         appIdentifier: app.client.appIdentifier,
@@ -59,8 +72,7 @@ const Webhook = class
 
   isRegistered = async function(destinationQueue, url)
   {
-    const apiUrl = `${process.env.WEBHOOK_HOST ?? `https://${getAppDomain()}`}`;
-    const fullUrl = `${apiUrl}${url}`;
+    const fullUrl = this.resolveWebhookUrl(url);
 
     const registeredWebhooks = await this.getRegistered();
 

@@ -549,6 +549,7 @@ const Migrator = class
             method: 'PUT',
             body: {
               ...existingPresetting,
+              appIdentifier: this.app.client.appIdentifier,
               script: scriptContent,
             },
           },
@@ -566,6 +567,7 @@ const Migrator = class
             method: 'POST',
             body: {
               name,
+              appIdentifier: this.app.client.appIdentifier,
               script: scriptContent,
               domain: 'IMPORT_BATCH_PROCESSING',
               groupRef: { id: scriptGroup.id },
@@ -695,6 +697,7 @@ const Migrator = class
             method: 'PUT',
             body: {
               ...existingPresetting,
+              appIdentifier: this.app.client.appIdentifier,
               script: scriptContent,
             },
           },
@@ -712,6 +715,7 @@ const Migrator = class
             method: 'POST',
             body: {
               name: triggerId,
+              appIdentifier: this.app.client.appIdentifier,
               script: scriptContent,
               domain: 'APP',
               groupRef: { id: scriptGroup.id },
@@ -776,6 +780,7 @@ const Migrator = class
           method: 'PUT',
           body: {
             ...existingScriptModule,
+            appIdentifier: this.app.client.appIdentifier,
             script: typeof script === 'string' ? script : JSON.stringify(script),
           },
         },
