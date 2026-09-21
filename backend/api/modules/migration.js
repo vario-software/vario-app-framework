@@ -48,6 +48,7 @@ ${identifier ? `AND identifier = '${identifier}'` : ''}
                 FROM system.queryAppMigrations
                WHERE appIdentifier = '${app.client.appIdentifier}'
                  AND identifier = '${key}'
+            ORDER BY note
     `,
     });
 
