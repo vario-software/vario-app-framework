@@ -5,6 +5,7 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');
 const ErpApi = require('#backend/api/ErpApi.js');
 const appAuthentication = require('#backend/setup/appAuthentication.js');
+const { setupConcurrency, concurrencyMiddleware } = require('#backend/setup/concurrency.js');
 const setupContext = require('#backend/setup/context.js');
 const setupException = require('#backend/setup/exception.js');
 const { log } = require('#backend/utils/logger.js');
@@ -23,6 +24,7 @@ const VarioCloudApp = class
     this.onKeycloakError = options.onKeycloakError;
 
     exceptionHandler = setupException(this);
+    setupConcurrency(this, options);
 
     this.express = express();
     this.port = '8080';
@@ -36,6 +38,11 @@ const VarioCloudApp = class
 
     this.log = options.log ?? log;
 
+    this.bodyParsers = [
+      bodyParser.json({ strict: false, ...options.bodyParser }),
+      bodyParser.raw({ type: 'application/octet-stream', limit: 100 * 1024 * 1024 }),
+    ];
+
     this.offlineToken = options.offlineToken ?? new OfflineToken(this);
     this.accessToken = options.accessToken ?? new AccessToken(this);
     this.baseUrlCache = options.baseUrlCache ?? new BaseUrlCache(this);
@@ -46,13 +53,13 @@ const VarioCloudApp = class
 
     this.express.use(cors());
 
-    this.express.use(bodyParser.json({ strict: false, ...options.bodyParser }));
-    this.express.use(bodyParser.raw({ type: 'application/octet-stream', limit: 100 * 1024 * 1024 }));
-
     this.apiServer = express.Router();
 
     this.apiServer.use(setupContext(this));
     this.apiServer.use(appAuthentication);
+    this.apiServer.use(concurrencyMiddleware());
+
+    this.apiServer.use(this.bodyParsers);
 
     this.express.use(options.apiPrefix ?? '/api', this.apiServer);
   }

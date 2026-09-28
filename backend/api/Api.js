@@ -1,18 +1,26 @@
 const { http, https } = require('follow-redirects');
 const { Readable } = require('stream');
 const { omitBy, isNil } = require('lodash');
+const { URLSearchParams } = require('url');
+const { getGroupKeyDefault } = require('#backend/setup/concurrency.js');
 const fetchFn = require('#backend/api/helpers/fetch.js');
 const getResponseStreamFn = require('#backend/api/helpers/getResponseStream.js');
 const gatewayFn = require('#backend/api/helpers/gateway.js');
 const redirectRequestFn = require('#backend/api/helpers/redirectRequest.js');
 const vqlFn = require('#backend/api/helpers/vql.js');
-const { getApp } = require('#backend/utils/context.js');
+const { getApp, getContext, bindContext } = require('#backend/utils/context.js');
 const HttpError = require('#backend/utils/httpError.js');
-const { URLSearchParams } = require('url');
 
 const RETRY_MIN_DELAY = 6 * 1000;
 const RETRY_MAX_DELAY = 60 * 1000;
 const LOG_MAX_SIZE = 512 * 1024;
+
+function getMaxRetries()
+{
+  const context = getContext();
+
+  return context.maxRetries ?? 5;
+}
 
 class Api
 {
@@ -23,7 +31,7 @@ class Api
     saveResponse = true,
     resolveOn = 'end',
     timeout = 15 * 60 * 1000,
-    maxRetries = 5,
+    maxRetries = getMaxRetries(),
     suppressLogs = false,
     secretsToMask = ['value'],
     pathParams = {},
@@ -83,9 +91,9 @@ class Api
   {
     const parsedQuery = new URLSearchParams(this.query);
 
-    if(parsedQuery.size > 0)
+    if (parsedQuery.size > 0)
     {
-      return '?' + parsedQuery.toString();
+      return `?${parsedQuery.toString()}`;
     }
 
     return '';
@@ -122,14 +130,14 @@ class Api
 
   setPath(path)
   {
-    const splitPath = path?.split('?')
+    const splitPath = path?.split('?');
 
-    if(splitPath[0])
+    if (splitPath[0])
     {
       this.path = splitPath[0];
     }
 
-    if(splitPath[1])
+    if (splitPath[1])
     {
       this.setQuery(Object.fromEntries(new URLSearchParams(splitPath[1]).entries()));
     }
@@ -290,6 +298,11 @@ class Api
 
   async finishRequest()
   {
+    // The response is through, so the attempt is over and its slot goes back
+    // before the log entry is written — that write must not occupy a slot of
+    // the queue in `schedule()`, it is a request of its own.
+    this.finishAttempt();
+
     if (this.checkIfSuccessful())
     {
       const message = {
@@ -302,7 +315,7 @@ class Api
           ),
         },
         response: this.getLoggableData(
-          () => this.secret ? maskSpecificKey(this.getData(), this.secretsToMask) : this.getData(),
+          () => (this.secret ? maskSpecificKey(this.getData(), this.secretsToMask) : this.getData()),
           this.getResponseHeaders()?.['content-type'],
           this.responseSize,
         ),
@@ -360,6 +373,12 @@ class Api
 
   async onError(error)
   {
+    // Reached by a transport error, by the `destroy()` of a timeout, and by an
+    // unsuccessful response through `finish()`. Together with `finishRequest()`
+    // and `handleRetry()` this covers every way an attempt can end — the
+    // request's `close` event does not, `follow-redirects` never emits it.
+    this.finishAttempt();
+
     const maskedBody = this.suppressLogs ? '[secret]' : this.getLoggableData(
       this.secret ? maskSpecificKey(this.body, this.secretsToMask) : this.body,
       this.getRequestHeader('Content-Type'),
@@ -470,19 +489,36 @@ class Api
     // otherwise tearing it down surfaces as a transport error.
     this.request.removeAllListeners('error');
     this.request.removeAllListeners('close');
-    this.request.on('error', () => {});
+    this.request.on('error', () =>
+    {});
     this.request.destroy();
     response.destroy();
 
     this.response = response;
 
-    const { resolve, reject } = this;
+    // This attempt is over, and its slot has to go back before the backoff
+    // starts: waiting inside it would hold a slot for up to `RETRY_MAX_DELAY`,
+    // and the next attempt could never get one of its own. The response was
+    // swallowed, so neither `finishRequest()` nor `onError()` will do it.
+    this.finishAttempt();
 
-    setTimeout(() =>
+    setTimeout(async () =>
     {
       this.retryCount = (this.retryCount ?? 0) + 1;
 
-      this.execute().then(resolve).catch(reject);
+      try
+      {
+        // Repeated per attempt, as it was when the retry went through
+        // `execute()`: after a few backoffs the app token the first attempt
+        // was built with may have expired.
+        await this.onBeforeRequest();
+
+        await this.schedule(() => this.sendRequest());
+      }
+      catch (error)
+      {
+        this.reject(error);
+      }
     }, retryDelay);
 
     return true;
@@ -514,10 +550,38 @@ class Api
     this.attemptStream.unpipe(this.request);
 
     // The stream is on its way out, an error from closing it has nowhere to go.
-    this.attemptStream.on('error', () => {});
+    this.attemptStream.on('error', () =>
+    {});
     this.attemptStream.destroy();
 
     this.attemptStream = null;
+  }
+
+  schedule(attempt)
+  {
+    if (!this.app.outgoingBottleneck)
+    {
+      return attempt();
+    }
+
+    // `this.timeout` only fires on an idle socket, so an answer that trickles
+    // in keeps its slot for as long as the sender cares to. The attempt is
+    // given a minute more than that before the queue lets go of it.
+    //
+    // Not for a body that is piped straight out — `gateway()`,
+    // `getResponseStream()`: there the consumer sets the pace, a transfer that
+    // takes longer than the deadline is doing its job, and taking the slot back
+    // would only break the bound while the request runs on. A consumer that
+    // stalls lets the socket go idle through backpressure, which `this.timeout`
+    // already ends.
+    const expiration = this.timeout && !this.outputStream ? this.timeout + 60 * 1000 : null;
+
+    // A queued job is started from a `setTimeout` of the job that just
+    // finished, so an unbound attempt would run in that request's context: its
+    // logs, tenant and app token would belong to someone else.
+    return this.app.outgoingBottleneck
+      .key(`${this.constructor.name}:${getGroupKeyDefault()}`)
+      .schedule({ expiration }, bindContext(attempt));
   }
 
   async execute()
@@ -528,6 +592,25 @@ class Api
     {
       this.resolve = resolve;
       this.reject = reject;
+
+      this.schedule(() => this.sendRequest()).catch(reject);
+    });
+  }
+
+  /**
+   * A single attempt, from opening the connection to handing the response on.
+   *
+   * Resolves once the attempt is over — answered, failed, or swallowed by
+   * `handleRetry` — which is what the queue in `schedule()` waits for. What the
+   * caller awaits is the promise `execute()` created, settled through
+   * `this.resolve`/`this.reject`; it outlives every attempt, so a retry does not
+   * have to chain promises to pass its result back.
+   */
+  sendRequest()
+  {
+    return new Promise(finishAttempt =>
+    {
+      this.finishAttempt = finishAttempt;
 
       // Every attempt starts without a response: the 429 `handleRetry` left
       // behind would otherwise be reported as the status of a retry that never
@@ -803,7 +886,7 @@ function expandUrl(template, params)
     {
       throw new Error(`Missing parameter "${key}" for template "${template}"`);
     }
-    
+
     return encodeURIComponent(params[key]);
   });
 }

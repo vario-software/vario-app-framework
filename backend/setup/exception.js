@@ -5,6 +5,14 @@ function setupException(app)
 {
   async function errorHandling(error)
   {
+    // Work handed over from a queue or a timer can reject with anything, and a
+    // bare `reject()` arrives as undefined. This is the last place that can
+    // report it, so it must not be the place that trips over it.
+    if (!error || typeof error !== 'object')
+    {
+      error = new Error(`rejected with a non-error value: ${String(error)}`);
+    }
+
     if (error.handled)
     {
       return;
@@ -52,6 +60,13 @@ function setupException(app)
 
   process.on('unhandledRejection', reason => errorHandling(reason));
   process.on('uncaughtException', reason => errorHandling(reason));
+
+  // Work that has outlived its express handler — a queued job, a timer — has
+  // nowhere to reject into: the handler below is only reached through `next()`,
+  // and the process-wide listeners run outside any context, where the app and
+  // the tenant to log with are gone. Such work hands its error over here
+  // instead, from inside the context it belongs to.
+  app.handleError = errorHandling;
 
   // eslint-disable-next-line no-unused-vars
   return (error, req, res, next) =>
