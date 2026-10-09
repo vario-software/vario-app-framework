@@ -8,7 +8,7 @@ const Migration = require('#backend/api/modules/migration.js');
 const TextEnum = require('#backend/api/modules/textEnum.js');
 const Webhook = require('#backend/api/modules/webhook.js');
 const PermittedToken = require('#backend/api/modules/permittedToken.js');
-const { validateOfflineToken, isAppTokenExpired, refreshAppToken } = require('#backend/utils/token.js');
+const { validateOfflineToken, isAppTokenExpired, refreshAppToken, keepAppTokenAlive } = require('#backend/utils/token.js');
 const HttpError = require('#backend/utils/httpError.js');
 
 const singletonPromise = new PromiseSingletonMap();
@@ -30,25 +30,41 @@ class ErpApi extends Api
     this.executeAsAppUser = executeAsAppUser;
   }
 
-  async onBeforeRequest()
+  async schedule(attempt)
   {
-    const { baseUrl, Authorization } = await this.getAuthorization();
+    // Only a request that forwards the app token has one to keep alive.
+    const stopKeepAlive = this.executeAsAppUser ? null : keepAppTokenAlive();
 
-    if (!this.executeAsAppUser)
+    try
     {
-      if (isAppTokenExpired())
+      return await super.schedule(async () =>
       {
-        await refreshAppToken();
-      }
+        stopKeepAlive?.();
 
-      this.setHeaders({
-        'X-Forwarded-App-Token': getAppToken(),
+        const { baseUrl, Authorization } = await this.getAuthorization();
+
+        this.setBaseUrl(`${baseUrl}/api/vario`);
+        this.setAuthorization(Authorization);
+
+        if (!this.executeAsAppUser)
+        {
+          if (isAppTokenExpired())
+          {
+            await refreshAppToken();
+          }
+
+          this.setHeaders({
+            'X-Forwarded-App-Token': getAppToken(),
+          });
+        }
+
+        return attempt();
       });
     }
-
-    this.setAuthorization(Authorization);
-
-    this.setBaseUrl(`${baseUrl}/api/vario`);
+    finally
+    {
+      stopKeepAlive?.();
+    }
   }
 
   async onResponse()

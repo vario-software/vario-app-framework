@@ -35,6 +35,7 @@ class Api
     suppressLogs = false,
     secretsToMask = ['value'],
     pathParams = {},
+    getGroupKey = getGroupKeyDefault,
     followRedirects,
     body,
     inputStream,
@@ -59,6 +60,7 @@ class Api
     this.followRedirects = followRedirects;
     this.secretsToMask = secretsToMask;
     this.pathParams = pathParams;
+    this.getGroupKey = getGroupKey;
     this.query = query;
 
     this.app = getApp();
@@ -576,11 +578,14 @@ class Api
     // already ends.
     const expiration = this.timeout && !this.outputStream ? this.timeout + 60 * 1000 : null;
 
+    // Each key is a queue of its own, so a request that must not wait behind
+    // the ones it unblocks is given a key none of them use.
+    //
     // A queued job is started from a `setTimeout` of the job that just
     // finished, so an unbound attempt would run in that request's context: its
     // logs, tenant and app token would belong to someone else.
     return this.app.outgoingBottleneck
-      .key(`${this.constructor.name}:${getGroupKeyDefault()}`)
+      .key(`${this.constructor.name}:${this.getGroupKey()}`)
       .schedule({ expiration }, bindContext(attempt));
   }
 

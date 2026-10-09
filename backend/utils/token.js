@@ -1,6 +1,11 @@
 const { jwtVerify, decodeJwt, importJWK } = require('jose');
 const { getApp } = require('#backend/utils/context.js');
-const { getAppToken, getContext } = require('#backend/utils/context.js');
+const { getAppToken, getContext, bindContext } = require('#backend/utils/context.js');
+const { getGroupKeyDefault } = require('#backend/setup/concurrency.js');
+
+const KEEP_ALIVE_MARGIN = 2 * 60 * 1000;
+const KEEP_ALIVE_MIN_DELAY = 60 * 1000;
+const KEEP_ALIVE_MAX_DURATION = 60 * 60 * 1000;
 
 function validateOfflineToken(offlineToken)
 {
@@ -92,7 +97,22 @@ function isAppTokenExpired()
   return ((exp - 2) < (Date.now() / 1000));
 }
 
-async function refreshAppToken()
+function refreshAppToken()
+{
+  const context = getContext();
+
+  if (!context.appTokenRefresh)
+  {
+    context.appTokenRefresh = requestAppToken().finally(() =>
+    {
+      context.appTokenRefresh = null;
+    });
+  }
+
+  return context.appTokenRefresh;
+}
+
+async function requestAppToken()
 {
   const appToken = getAppToken();
   const app = getApp();
@@ -106,6 +126,7 @@ async function refreshAppToken()
     secret: true,
     executeAsAppUser: true,
     secretsToMask: ['bearerToken'],
+    getGroupKey: () => `refresh:${getGroupKeyDefault()}`,
   });
 
   const newAppToken = data.bearerToken;
@@ -118,9 +139,98 @@ async function refreshAppToken()
   context.accessToken = accessToken;
 }
 
+function keepAppTokenAlive()
+{
+  const context = getContext();
+
+  context.appTokenKeepAliveUntil = Date.now() + KEEP_ALIVE_MAX_DURATION;
+
+  context.appTokenWaiting = (context.appTokenWaiting ?? 0) + 1;
+
+  scheduleAppTokenRefresh();
+
+  let signedOff = false;
+
+  return () =>
+  {
+    if (signedOff)
+    {
+      return;
+    }
+
+    signedOff = true;
+
+    context.appTokenWaiting -= 1;
+
+    if (context.appTokenWaiting > 0)
+    {
+      return;
+    }
+
+    clearTimeout(context.appTokenTimer);
+
+    context.appTokenTimer = null;
+  };
+}
+
+function scheduleAppTokenRefresh()
+{
+  const context = getContext();
+
+  if (context.appTokenTimer)
+  {
+    return;
+  }
+
+  const remaining = context.appTokenKeepAliveUntil - Date.now();
+
+  if (remaining <= 0)
+  {
+    return;
+  }
+
+  const delay = Math.min(
+    Math.max((context.accessToken.exp * 1000) - KEEP_ALIVE_MARGIN - Date.now(), KEEP_ALIVE_MIN_DELAY),
+    remaining,
+  );
+
+  const timer = setTimeout(bindContext(async () =>
+  {
+    try
+    {
+      await refreshAppToken();
+    }
+    catch (error)
+    {
+      await getApp().log(
+        `app token was not renewed while waiting: ${error?.message ?? error}`,
+        'utils/token',
+        'WARNING',
+      );
+    }
+    finally
+    {
+      if (context.appTokenTimer === timer)
+      {
+        context.appTokenTimer = null;
+      }
+
+      if (context.appTokenWaiting > 0)
+      {
+        scheduleAppTokenRefresh();
+      }
+    }
+  }), delay);
+
+  context.appTokenTimer = timer;
+
+  timer.unref();
+}
+
 module.exports = {
   validateOfflineToken,
   validateAppToken,
   isAppTokenExpired,
   refreshAppToken,
+  keepAppTokenAlive,
 };
