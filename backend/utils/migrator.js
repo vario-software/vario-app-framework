@@ -45,12 +45,16 @@ const Migrator = class
       }
 
       await this.ApiAdapter.migration.set(migration, note);
+
+      this.#saveMigrationResult('success', note);
     }
     catch (error)
     {
       await this.app.onMigrationError(error);
 
       await this.methods.log(`Migration "${migration}" failed\n\n${formatMigrationError(error)}`, 'ERROR', error.message);
+
+      this.#saveMigrationResult('failed', error.message);
     }
   };
 
@@ -65,14 +69,33 @@ const Migrator = class
     try
     {
       await callback(this.methods, this.migrationResults);
+
+      this.#saveMigrationResult('success');
     }
     catch (error)
     {
       await this.app.onMigrationError(error);
 
       await this.methods.log(`Migration "${migration}" failed\n\n${formatMigrationError(error)}`, 'ERROR', error.message);
+
+      this.#saveMigrationResult('failed', error.message);
     }
   };
+
+  #saveMigrationResult(type, message)
+  {
+    const context = getContext();
+
+    if (!context.migrationResult)
+    {
+      context.migrationResult = {
+        success: [],
+        failed: [],
+      };
+    }
+
+    context.migrationResult[type].push({ key: context.migration, message });
+  }
 
   methods = {
     log: async (message, level = 'INFO') =>
