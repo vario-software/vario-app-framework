@@ -57,7 +57,7 @@
   left: 0.4286em; /* 6px */
   width: 0.2857em; /* 4px */
   height: 0.7857em; /* 11px */
-  border: solid #fff;
+  border: solid var(--v-on-secondary, #fff);
   border-width: 0 0.1429em 0.1429em 0; /* 2px 2px */
   transform: rotate(45deg);
   opacity: 0;

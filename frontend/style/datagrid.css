@@ -44,7 +44,7 @@
 .v-datagrid > table > thead > tr > th {
   background: var(--v-secondary);
   font-weight: 500;
-  color: #fff;
+  color: var(--v-on-secondary, #fff);
 }
 
 .v-datagrid > table > tbody > tr > td {

@@ -1,4 +1,5 @@
 const { getApp } = require('#backend/utils/context.js');
+const HttpError = require('#backend/utils/httpError.js');
 
 const TextEnum = class
 {
@@ -9,6 +10,15 @@ const TextEnum = class
 
   get = async function(key)
   {
+    if (!key)
+    {
+      throw new HttpError(
+        'MISSING_TEXT_ENUM_GROUP_KEY',
+        400,
+        'backend/api/modules/textEnum',
+      );
+    }
+
     const { data } = await this.getAll({ limit: 1, key });
 
     return data[0];
@@ -19,11 +29,12 @@ const TextEnum = class
     const { data, moreElements, nextOffset } = await this.ApiAdapter.vql({
       statement: `
             SELECT
+              --v:result{displayname='id'}
               id,
+              --v:result{displayname='label'}
               label,
-              key,
-              textEnums.id,
-              textEnums.label
+              --v:result{displayname='key'}
+              key
             FROM masterdata.query-textenum-group
   ${key ? `WHERE key = '${key}'` : ''}
     `,
@@ -40,11 +51,22 @@ const TextEnum = class
 
   setGroup = async function(textEnumGroupTemplate)
   {
-    let textEnumGroup = await this.getEnumGroup(textEnumGroupTemplate.key);
+    const app = getApp();
+
+    let textEnumGroup = await this.get(textEnumGroupTemplate.key);
 
     if (textEnumGroup)
     {
       await this.removeEnums(textEnumGroup);
+
+      const response = await this.ApiAdapter.fetch(
+        `/community/${app.version}/cmn/masterdata/text-enum-groups/${textEnumGroup.id}`,
+        {
+          body: JSON.stringify(textEnumGroupTemplate),
+          method: 'PUT',
+        });
+
+      textEnumGroup = response.data;
     }
     else
     {
@@ -81,10 +103,13 @@ const TextEnum = class
     const { data, moreElements, nextOffset } = await this.ApiAdapter.vql({
       statement: `
             SELECT
+              --v:result{displayname='id'}
               id,
+              --v:result{displayname='entry'}
               entry
             FROM masterdata.query-textenum
   ${groupId ? `WHERE group.id = '${groupId}'` : ''}
+            ORDER BY id
     `,
       offset,
       limit,
@@ -97,14 +122,32 @@ const TextEnum = class
     };
   };
 
+  getEnumsByGroup = async function(textEnumGroup)
+  {
+    if (!textEnumGroup?.id)
+    {
+      return [];
+    }
+
+    const textEnums = [];
+    let moreElements;
+
+    do
+    {
+      // eslint-disable-next-line no-await-in-loop
+      const page = await this.getAllEnums({ offset: textEnums.length, limit: 500, groupId: textEnumGroup.id });
+
+      textEnums.push(...page.data);
+      moreElements = String(page.moreElements) === 'true' && page.data.length > 0;
+    }
+    while (moreElements);
+
+    return textEnums;
+  };
+
   removeEnums = async function(textEnumGroup)
   {
     const textEnums = await this.getEnumsByGroup(textEnumGroup);
-
-    if (!textEnums)
-    {
-      return true;
-    }
 
     await textEnums.reduce(async (previousPromise, textEnum) =>
     {
@@ -134,7 +177,7 @@ const TextEnum = class
     {
       await previousPromise;
 
-      return this.createEnum(textEnum);
+      return this.createEnum({ ...textEnum, groupKey: customGroupKey });
     }, Promise.resolve());
 
     return true;

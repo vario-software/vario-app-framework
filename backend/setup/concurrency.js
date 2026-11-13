@@ -180,7 +180,7 @@ function concurrencyMiddleware(getGroupKey = getGroupKeyDefault)
         // of the reasons, a limiter built with an unusable setting is another,
         // so the message says what happened instead of asserting a cause.
         app.log(
-          `${req.method} ${req.originalUrl} was not queued for ${key}: ${error.message}`,
+          `${req.method} ${req.path} was not queued for ${key}: ${error.message}`,
           'setup/concurrency',
           'WARNING',
         );

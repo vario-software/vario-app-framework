@@ -39,7 +39,7 @@ function appAuthentication(req, res, next)
       console.log({
         message: 'Auth failed',
         requestId: getRequestId(),
-        token,
+        token: token && `…${token.slice(-5)}`,
         error,
         requestPath: req.path,
       });
