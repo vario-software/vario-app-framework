@@ -885,7 +885,7 @@ function maskSpecificKey(response, secretsToMask = ['value'], mask = '[secret]')
 
 function expandUrl(template, params)
 {
-  return template.replace(/:([a-zA-Z_-]+)/g, (match, key) =>
+  return template.replace(/:([a-zA-Z_][a-zA-Z0-9_-]*)/g, (match, key) =>
   {
     if (!(key in params))
     {
