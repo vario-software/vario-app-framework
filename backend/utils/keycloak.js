@@ -42,7 +42,11 @@ async function refreshAccessToken(offlineToken, refreshUrl)
 
       if (app.onKeycloakError)
       {
-        app.onKeycloakError(error);
+        // Not awaited, reporting must not hold up the refresh. Its rejection is
+        // caught here, it would otherwise surface as an unhandled rejection.
+        Promise.resolve()
+          .then(() => app.onKeycloakError(error))
+          .catch(reportingError => console.error('Reporting a Keycloak error failed', reportingError));
       }
 
       // invalid_grant on the offline-token refresh means the offline token is no
