@@ -50,6 +50,10 @@ const { logo, appTitle } = getCorporateDesign() ?? {};
 receiveMain({ corporateDesign: design => updateHeader(design) });
 ```
 
+## Tabs and dashboard widgets
+
+UI integrations can add tabs to detail pages (`account.tabs`, `article.tabs`, `asset.tabs`, `deal.tabs`, `project.tabs`, `tasks.tabs`, `inventory.tabs`, `document.tabs`) and widgets to dashboards (`dashboard.<home|crm|account|documentLine|article|asset|deal|project|task|storage|finance|salesChannel>`). A tab shows a counter when the App provides `<id>.badge`.
+
 ## VARIO Cloud developer resources
 
 - [Understand VARIO Cloud Apps](https://developer.vario-software.de/documentation/apps/introduction)

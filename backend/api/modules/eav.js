@@ -24,19 +24,32 @@ const Eav = class
 
     if (existingGroup)
     {
-      eavGroup.id = existingGroup;
-
-      return eavGroup;
+      return { ...eavGroup, id: existingGroup };
     }
 
     const app = getApp();
 
-    eavGroup = await this.ApiAdapter.fetch(`/community/${app.version}/cmn/eav-groups`, {
-      method: 'POST',
-      body: JSON.stringify(eavGroup),
-    });
+    try
+    {
+      const { data } = await this.ApiAdapter.fetch(`/community/${app.version}/cmn/eav-groups`, {
+        method: 'POST',
+        body: JSON.stringify(eavGroup),
+      });
 
-    return eavGroup.data;
+      return data;
+    }
+    catch (error)
+    {
+      const createdMeanwhile = error.statusCode === 422
+        && await this.getGroupIdByKey(eavGroup.key).catch(() => null);
+
+      if (!createdMeanwhile)
+      {
+        throw error;
+      }
+
+      return { ...eavGroup, id: createdMeanwhile };
+    }
   };
 
   changeGroup = async function (groupKey, callback)
@@ -97,9 +110,14 @@ const Eav = class
 
       return eavGroup.id;
     }
-    catch
+    catch (error)
     {
-      return null;
+      if (error.statusCode === 404)
+      {
+        return null;
+      }
+
+      throw error;
     }
   };
 };
